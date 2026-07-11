@@ -1,0 +1,8 @@
+config/credentials.py
+data/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+Project Notes.pages
+**/.DS_Store
