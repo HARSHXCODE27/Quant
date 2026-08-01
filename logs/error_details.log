@@ -1,0 +1,24 @@
+
+--- RELIANCE at 2026-07-17 11:34:31.180431 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/scale_pipeline.py", line 65, in run_all_stocks
+    process_stock(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/scale_pipeline.py", line 34, in process_stock
+    monthly = compute_monthly_range(df)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/monthly_range.py", line 17, in compute_monthly_range
+    df["year_month"] = df.index.to_period("M")
+                       ^^^^^^^^^^^^^^^^^^
+AttributeError: 'RangeIndex' object has no attribute 'to_period'. Did you mean: 'to_series'?
+
+--- TCS at 2026-07-17 11:34:32.010444 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/scale_pipeline.py", line 65, in run_all_stocks
+    process_stock(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/scale_pipeline.py", line 34, in process_stock
+    monthly = compute_monthly_range(df)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/monthly_range.py", line 17, in compute_monthly_range
+    df["year_month"] = df.index.to_period("M")
+                       ^^^^^^^^^^^^^^^^^^
+AttributeError: 'RangeIndex' object has no attribute 'to_period'. Did you mean: 'to_series'?

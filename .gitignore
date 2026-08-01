@@ -6,3 +6,5 @@ __pycache__/
 .ipynb_checkpoints/
 Project Notes.pages
 **/.DS_Store
+exports/
+config/access_token.txt
