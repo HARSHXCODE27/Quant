@@ -10,6 +10,100 @@ def _pct_rank(series, lower_is_better):
     ranks = series.rank(pct=True) * 100
     return (100 - ranks) if lower_is_better else ranks
 
+def _add_volatility_persistence_flag(df, threshold_percentile="90th percentile monthly range_pct"):
+    """
+    Checks each stock's most recently CLOSED month's range against its own
+    percentile — flags stocks whose last month was an outlier, since tested
+    evidence shows wide months tend to be followed by continued elevated
+    volatility (momentum), not reversion. See README for the underlying test.
+    """
+    import pandas as pd
+    from datetime import datetime
+
+    current_year_month = datetime.now().strftime("%Y-%m")
+    flags = []
+
+    for symbol in df["symbol"]:
+        path = os.path.join(EXPORTS_DIR, f"{symbol}_full_report.xlsx")
+        if not os.path.exists(path):
+            flags.append({"symbol": symbol, "last_month_range_pct": None, "volatility_persistence_flag": ""})
+            continue
+
+        try:
+            monthly = pd.read_excel(path, sheet_name="Monthly Range")
+            closed_months = monthly[monthly["year_month"] != current_year_month]
+            if closed_months.empty:
+                flags.append({"symbol": symbol, "last_month_range_pct": None, "volatility_persistence_flag": ""})
+                continue
+
+            last_month = closed_months.iloc[-1]
+            p90 = monthly["range_pct"].quantile(0.90)
+
+            is_outlier = last_month["range_pct"] > p90
+            flag_text = "⚠ ELEVATED — last month was an outlier, momentum data suggests caution" if is_outlier else ""
+
+            flags.append({
+                "symbol": symbol,
+                "last_month_range_pct": round(last_month["range_pct"], 2),
+                "volatility_persistence_flag": flag_text
+            })
+        except Exception:
+            flags.append({"symbol": symbol, "last_month_range_pct": None, "volatility_persistence_flag": ""})
+
+    flags_df = pd.DataFrame(flags)
+    return df.merge(flags_df, on="symbol", how="left")
+
+def _add_trend_age_flag(df):
+    """
+    Checks each stock's currently OPEN trend age against its own historical
+    duration percentiles. Tested evidence (reversion_test.py) shows aged trends
+    tend toward momentum/continuation, NOT reversal — so this is framed as a
+    mild positive note, not a warning, unlike the short IC volatility flag.
+    """
+    import pandas as pd
+    from datetime import datetime
+
+    flags = []
+
+    for symbol in df["symbol"]:
+        path = os.path.join(EXPORTS_DIR, f"{symbol}_full_report.xlsx")
+        if not os.path.exists(path):
+            flags.append({"symbol": symbol, "current_trend_age_days": None, "trend_age_note": ""})
+            continue
+
+        try:
+            trades = pd.read_excel(path, sheet_name="Flips")
+            open_trade = trades[trades["status"] == "OPEN"]
+            if open_trade.empty:
+                flags.append({"symbol": symbol, "current_trend_age_days": None, "trend_age_note": ""})
+                continue
+            open_trade = open_trade.iloc[0]
+
+            entry_date = pd.to_datetime(open_trade["entry_date"]).tz_localize(None)
+            age_days = (datetime.now() - entry_date).days
+
+            summary = pd.read_excel(path, sheet_name="Summary")
+            def get_metric(name):
+                row = summary[summary["metric"] == name]
+                return row["value"].values[0] if not row.empty else None
+
+            p75_dur = get_metric("75th percentile duration (days)")
+
+            note = ""
+            if p75_dur and age_days > p75_dur:
+                note = "note: aged trend — tested data shows momentum, not reversal risk"
+
+            flags.append({
+                "symbol": symbol,
+                "current_trend_age_days": age_days,
+                "trend_age_note": note
+            })
+        except Exception:
+            flags.append({"symbol": symbol, "current_trend_age_days": None, "trend_age_note": ""})
+
+    flags_df = pd.DataFrame(flags)
+    return df.merge(flags_df, on="symbol", how="left")
+
 def score_for_credit_spreads(comparison_df, min_flips=30, gap_risk_threshold=5.0):
     df = comparison_df[comparison_df["Total flips (closed)"] >= min_flips].copy()
 
@@ -38,7 +132,9 @@ def score_for_credit_spreads(comparison_df, min_flips=30, gap_risk_threshold=5.0
                     "Median max_adverse_pct", "Worst max_adverse_pct (4yr)",
                     "Worst single gap (4yr)"]
 
-    return df[result_cols].sort_values("credit_spread_score", ascending=False).reset_index(drop=True)
+    result = df[result_cols].sort_values("credit_spread_score", ascending=False).reset_index(drop=True)
+    result = _add_trend_age_flag(result)
+    return result
 
 def score_for_short_iron_condor(comparison_df, min_flips=30, gap_risk_threshold=4.0):
     """
@@ -71,7 +167,9 @@ def score_for_short_iron_condor(comparison_df, min_flips=30, gap_risk_threshold=
                     "Median max_adverse_pct", "Worst max_adverse_pct (4yr)",
                     "Median duration (days)", "Worst single gap (4yr)"]
 
-    return df[result_cols].sort_values("short_ic_score", ascending=False).reset_index(drop=True)
+    result = df[result_cols].sort_values("short_ic_score", ascending=False).reset_index(drop=True)
+    result = _add_volatility_persistence_flag(result)
+    return result
 
 def score_for_long_iron_condor(comparison_df, min_flips=30, gap_benefit_threshold=4.0):
     """
@@ -106,7 +204,9 @@ def score_for_long_iron_condor(comparison_df, min_flips=30, gap_benefit_threshol
                     "Median max_adverse_pct", "Worst max_adverse_pct (4yr)",
                     "Median duration (days)", "Worst single gap (4yr)"]
 
-    return df[result_cols].sort_values("long_ic_score", ascending=False).reset_index(drop=True)
+    result = df[result_cols].sort_values("long_ic_score", ascending=False).reset_index(drop=True)
+    result = _add_trend_age_flag(result)
+    return result
 
 def score_for_directional_buying(comparison_df, min_flips=30, liquid_universe=None):
     """
