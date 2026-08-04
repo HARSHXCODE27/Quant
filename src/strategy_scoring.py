@@ -171,73 +171,77 @@ def score_for_short_iron_condor(comparison_df, min_flips=30, gap_risk_threshold=
     result = _add_volatility_persistence_flag(result)
     return result
 
-def score_for_long_iron_condor(comparison_df, min_flips=30, gap_benefit_threshold=4.0):
+def score_for_debit_spread(comparison_df, min_trades=30, skew_gap_threshold=0.3):
     """
-    Ranks stocks for long iron condor suitability — favors high-volatility,
-    trend-committed stocks where big moves (which you're positioned to profit from)
-    are common. Inverse priorities of short IC.
+    Ranks stocks/indices for debit spread suitability (Stage 9), reading the
+    full-universe backtest from debit_spread_scale_pipeline.py -
+    exports/DEBIT_SPREAD_COMPARISON.xlsx, NOT the Supertrend-based
+    ALL_STOCKS_COMPARISON.xlsx the other four scorers use (different signal,
+    different exit logic entirely - target/stop/time, not "hold until flip").
+
+    Full-universe result (214 instruments, Nov 2024-Aug 2026, ema_adx_signal +
+    debit_spread_trades defaults): 59.3% of instruments showed a positive
+    avg_r_achieved, but with high variance (std 0.21 vs mean 0.08) - this
+    strategy is NOT uniformly good across instruments. That's exactly why
+    this ranking exists, same reasoning as the other three scorers.
+
+    median_r_achieved is weighted highest, not avg_r_achieved - same
+    median-over-mean preference already established elsewhere in this
+    project ("median preferred... data is outlier-skewed" in the assumptions
+    log). A stock can have a healthy avg_r_achieved carried by a couple of
+    big TARGET/TIME wins while the *typical* trade still loses - median
+    catches that, average alone would miss it. This is exactly what BHARTIARTL
+    showed in validation: avg 0.11R but median -0.45R.
+
+    Returns (ranked, watchlist):
+    - ranked: scored/sorted instruments with >= min_trades closed trades -
+      the percentile ranking is only computed within this reliable group.
+    - watchlist: instruments below min_trades, NOT blended into the same
+      percentile ranking (a thin sample carries the same real uncertainty
+      whether it's thin because of bad luck or because the stock was only
+      recently added to F&O - e.g. SWIGGY, ~29 trades even over the full
+      backtest window, purely because it hasn't been listed long enough to
+      generate more signals yet). Shown separately, sorted by avg_r_achieved,
+      so a promising-but-unproven name doesn't just silently disappear.
+      Re-check these at the next periodic refresh - trade count grows on its
+      own as more calendar time passes, no action needed to "fix" it.
     """
-    df = comparison_df[comparison_df["Total flips (closed)"] >= min_flips].copy()
+    df = comparison_df[comparison_df["closed_trades"] >= min_trades].copy()
 
-    df["_score_range_median"]    = _pct_rank(df["Median monthly range_pct"], lower_is_better=False)
-    df["_score_adverse_worst"]   = _pct_rank(df["Worst max_adverse_pct (4yr)"], lower_is_better=False)
-    df["_score_duration_median"] = _pct_rank(df["Median duration (days)"], lower_is_better=False)
-    df["_score_range_worst"]     = _pct_rank(df["Largest monthly range_pct"], lower_is_better=False)
-    df["_score_adverse_median"]  = _pct_rank(df["Median max_adverse_pct"], lower_is_better=False)
+    watchlist_cols = ["symbol", "closed_trades", "win_rate_pct", "avg_r_achieved",
+                      "median_r_achieved", "median_candles_held"]
+    watchlist = comparison_df[comparison_df["closed_trades"] < min_trades].copy()
+    watchlist = watchlist[[c for c in watchlist_cols if c in watchlist.columns]]
+    watchlist = watchlist.sort_values("avg_r_achieved", ascending=False).reset_index(drop=True)
 
-    df["long_ic_score"] = (
-        df["_score_range_median"]    * 3 +
-        df["_score_adverse_worst"]   * 3 +
-        df["_score_duration_median"] * 3 +
-        df["_score_range_worst"]     * 2 +
-        df["_score_adverse_median"]  * 2
-    ) / 13
-    df["long_ic_score"] = df["long_ic_score"].round(1)
+    df["_score_median_r"] = _pct_rank(df["median_r_achieved"], lower_is_better=False)
+    df["_score_win_rate"] = _pct_rank(df["win_rate_pct"], lower_is_better=False)
+    df["_score_avg_r"]    = _pct_rank(df["avg_r_achieved"], lower_is_better=False)
+    df["_score_candles"]  = _pct_rank(df["median_candles_held"], lower_is_better=True)  # faster-resolving = less theta exposure
 
-    # For long IC, a history of big gaps is a POSITIVE signal, not a warning
-    df["gap_benefit_flag"] = df["Worst single gap (4yr)"].apply(
-        lambda x: f"✓ Historical gap potential (>{gap_benefit_threshold}%)" if x > gap_benefit_threshold else ""
+    df["debit_spread_score"] = (
+        df["_score_median_r"] * 4 +
+        df["_score_win_rate"] * 3 +
+        df["_score_avg_r"]    * 2 +
+        df["_score_candles"]  * 1
+    ) / 10
+    df["debit_spread_score"] = df["debit_spread_score"].round(1)
+
+    # Flag - doesn't affect the score or exclude the stock, just a visible
+    # warning: a big gap between avg and median R means the edge leans on a
+    # few outlier wins rather than a broadly reliable one - the typical trade
+    # on that stock may still lose even though its average looks fine.
+    skew_gap = df["avg_r_achieved"] - df["median_r_achieved"]
+    df["outlier_reliance_flag"] = skew_gap.apply(
+        lambda x: f"⚠ RELIES ON OUTLIER WINS (avg-median gap {x:.2f}R)" if x > skew_gap_threshold else ""
     )
 
-    result_cols = ["symbol", "long_ic_score", "gap_benefit_flag", "Total flips (closed)",
-                    "Median monthly range_pct", "Largest monthly range_pct",
-                    "Median max_adverse_pct", "Worst max_adverse_pct (4yr)",
-                    "Median duration (days)", "Worst single gap (4yr)"]
+    result_cols = ["symbol", "debit_spread_score", "outlier_reliance_flag",
+                   "closed_trades", "win_rate_pct", "avg_r_achieved",
+                   "median_r_achieved", "median_candles_held"]
 
-    result = df[result_cols].sort_values("long_ic_score", ascending=False).reset_index(drop=True)
-    result = _add_trend_age_flag(result)
-    return result
-
-def score_for_directional_buying(comparison_df, min_flips=30, liquid_universe=None):
-    """
-    Ranks stocks for directional option buying (long calls/puts on Supertrend
-    flips) — favors stocks with strong average moves and reasonable win rates,
-    restricted to a liquid universe since option buying needs tradeable near-the-
-    money strikes, unlike premium-selling strategies which can tolerate thinner names.
-    """
-    df = comparison_df[comparison_df["Total flips (closed)"] >= min_flips].copy()
-
-    if liquid_universe is not None:
-        df = df[df["symbol"].isin(liquid_universe)].copy()
-
-    df["_score_pct_move"]        = _pct_rank(df["Avg pct_move (all)"], lower_is_better=False)
-    df["_score_win_rate"]        = _pct_rank(df["Win rate % (pct_move > 0)"], lower_is_better=False)
-    df["_score_duration_median"] = _pct_rank(df["Median duration (days)"], lower_is_better=False)
-    df["_score_biggest_move"]    = _pct_rank(df["Biggest single pct_move"], lower_is_better=False)
-
-    df["directional_buy_score"] = (
-        df["_score_pct_move"]        * 3 +
-        df["_score_win_rate"]        * 3 +
-        df["_score_duration_median"] * 2 +
-        df["_score_biggest_move"]    * 2
-    ) / 10
-    df["directional_buy_score"] = df["directional_buy_score"].round(1)
-
-    result_cols = ["symbol", "directional_buy_score", "Total flips (closed)",
-                    "Avg pct_move (all)", "Win rate % (pct_move > 0)",
-                    "Median duration (days)", "Biggest single pct_move"]
-
-    return df[result_cols].sort_values("directional_buy_score", ascending=False).reset_index(drop=True)
+    ranked = df[result_cols].sort_values("debit_spread_score", ascending=False).reset_index(drop=True)
+    return ranked, watchlist
 
 def save_ranking(ranked_df, filename):
     path = os.path.join(EXPORTS_DIR, filename)
