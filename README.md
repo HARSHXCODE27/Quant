@@ -50,6 +50,41 @@
     High priority: median monthly range, median adverse, worst monthly range (all lower =
     better). Duration weighting flipped vs credit spreads (shorter = better). Stricter gap
     flag threshold (>4%).
+  - **Real limitation raised and investigated: the ranking is static and can't help time
+    ENTRY at the start of a new expiry cycle.** The concern: confirming a stock is actually
+    behaving range-bound this month only firms up mid-month, by when a large share of that
+    month's theta decay is already spent - the ranking alone gives no earlier signal, and
+    doesn't react to what's happening in the market right now. Checked four possible
+    fixes before building anything:
+    1. **Trend-freshness filter (tested, negative)** - hypothesis: a currently-active 4H
+       trend that flipped very recently (fresh directional move) at month-start should
+       predict a wider month than a long-stable trend. Tested across 216 instruments,
+       10,671 symbol-month observations: correlation between trend age at month-start and
+       that month's realized range_pct was 0.017 - essentially zero. Not built; would not
+       have helped.
+    2. **Recency-weighted ranking (tested, modest positive - built).** Walk-forward test
+       (216 instruments, 9,010 symbol-month predictions): a recency-weighted median of
+       monthly range_pct (weight = 0.5^(months_ago/halflife), several half-lives tried)
+       beat the flat all-time median at predicting the NEXT month's range - mean abs error
+       4.87pp → 4.79pp at a 6-month half-life, closer in ~50% of cases vs ~45% for flat.
+       Real but modest - doesn't solve the core timing problem, but free with existing
+       data, so wired into `score_for_short_iron_condor()` as an additional weighted
+       component (`recency_weighted_range_pct`/`recency_weighted_adverse_pct`) alongside
+       the existing flat metrics, not replacing them.
+    3. **IV rank/percentile (the one that would actually help - scoped, not built yet).**
+       Checked directly via the Kite MCP tools: `get_quotes`/`get_ohlc` return LTP, OHLC,
+       volume, open interest, and bid/ask depth for options contracts, but NOT implied
+       volatility or Greeks. Getting IV means solving it ourselves (Black-Scholes from
+       LTP+spot+strike+time-to-expiry), and a proper IV RANK needs a historical IV time
+       series - which means reconstructing each month's ATM option's price history per
+       symbol, since option instrument tokens roll every expiry (not a continuous series
+       like equity). This is the one signal that would genuinely answer "is premium rich
+       or cheap right now" independent of price range - but it's a real multi-step build,
+       tracked as its own future project, not a quick add-on.
+    4. **Earnings-calendar exclusion (parked - no data source).** No corporate-actions/
+       earnings-calendar endpoint exists in Kite Connect, and no reliable automated source
+       is available in this environment. Stays a manual check (already logged below in the
+       assumptions log), same as options liquidity.
   - ~~`score_for_long_iron_condor`~~ and ~~`score_for_directional_buying`~~ — **removed**
     (not needed going forward). Long IC had found a real, unresolved liquidity limitation
     (top-ranked names were mostly small/mid-cap with poor OTM options liquidity —
@@ -70,6 +105,46 @@
 - [x] Full live/automated alert system (WebSocket, Telegram, always-on VPS) was scoped and
       deliberately **deferred** — advisory-only manual system judged sufficient until the
       strategy is proven with real trading experience
+- [x] **Honest review of the ranking/filter/screen pipeline (requested directly, not
+      assumed to need fixing).** What held up: `score_for_credit_spreads`'s weighting is
+      internally consistent for what this actually is (trend-aligned premium selling, not
+      range-bound) - low adverse, low fraction of flips reversing within 30 days (favors
+      trends outlasting a spread's life), longer median duration, min_flips=30 floor.
+      `trend_age_note` correctly avoids over-claiming, since reversion_test.py/
+      exhaustion_test.py already tested and found crossing a duration percentile does NOT
+      predict reversal. Three real gaps found, two fixed, one flagged as unbuilt:
+  - **Screener refresh was inefficient, not destructive (checked directly, unlike the
+    other three pipelines).** Notebook 06's refresh cell always used the SAME deep
+    `from_date=2022-01-01` window as notebook 02's monthly refresh - so unlike the debit
+    spread/option buying/pledged bugs, it was never silently shrinking history. It was
+    wasteful though: re-fetching ~4 years of 4H data for a ~16-symbol shortlist on every
+    daily run. Added `process_stock_incremental()` to `scale_pipeline.py` (same
+    merge-not-replace pattern and shrink-guard as the other three fixes) and switched
+    notebook 06 to use it - validated via a mocked fetch test (existing history correctly
+    preserved/extended, fresh-symbol path still does a proper deep fetch, guard condition
+    correctly detects a shrink scenario) before wiring in.
+  - **Screener showed age but not runway - fixed.** `check_trend_status()` told you how
+    long a trend had run and whether it crossed past percentile checkpoints, but not the
+    more directly useful number: how much of that percentile's "runway" is left right now.
+    Added `runway_left_vs_median/p75/p90` (checkpoint minus current age, negative = already
+    past it) to `daily_screener.py` - purely descriptive, same tested caveat as the
+    booleans it sits alongside (not a reversal/exit signal), just easier to read at a
+    glance than three separate True/False flags.
+  - **Recency-weighting tested for credit spread's own metrics - real negative result,
+    not built.** The same idea that gave short IC a modest improvement (see Stage 6) was
+    tested here too, properly, before assuming it would transfer: walk-forward across 216
+    instruments, 11,499 flip-level predictions, comparing a flat all-time median against a
+    recency-weighted one for `duration_days` and `max_adverse_pct`. Flat median won clearly
+    for duration (mean error 14.8 days vs 15.0-17.4 across every half-life tried, 2-12
+    months) and was a wash-to-slightly-worse for max_adverse_pct. Likely because these are
+    irregular per-flip events, unlike short IC's regularly-sampled monthly range_pct -
+    recency-weighting an irregular event stream just amplifies noise from whatever's
+    recent rather than capturing real regime drift. Not wired in.
+  - **Sector-concentration check remains a real, unbuilt gap.** Confirmed directly against
+    a real shortlist run: ICICIPRULI, HDFCBANK, and BANKNIFTY all appeared in the same
+    top-15 credit-spread shortlist simultaneously - all financials, with nothing in the
+    pipeline flagging it. Stays part of the manual checklist (results dates, sector news,
+    IV, concentration) for now - not built this round.
 
 ### Stage 8 — Live tracking / automation (future, not started)
 - [ ] Only revisit if manual checking becomes a proven, felt bottleneck after real trading

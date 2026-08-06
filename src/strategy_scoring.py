@@ -136,26 +136,133 @@ def score_for_credit_spreads(comparison_df, min_flips=30, gap_risk_threshold=5.0
     result = _add_trend_age_flag(result)
     return result
 
-def score_for_short_iron_condor(comparison_df, min_flips=30, gap_risk_threshold=4.0):
+def _weighted_median(values, weights):
+    """Shared math helper: weighted median via 50% cumulative-weight cutoff."""
+    import numpy as np
+    values = np.asarray(values, dtype=float)
+    weights = np.asarray(weights, dtype=float)
+    mask = ~np.isnan(values)
+    values, weights = values[mask], weights[mask]
+    if len(values) == 0:
+        return float("nan")
+    order = np.argsort(values)
+    v, w = values[order], weights[order]
+    cum = np.cumsum(w)
+    cutoff = cum[-1] / 2.0
+    idx = np.searchsorted(cum, cutoff)
+    return float(v[min(idx, len(v) - 1)])
+
+def _add_recency_weighted_short_ic_stats(symbol_list, halflife_months=6):
+    """
+    TESTED (walk-forward, 216 instruments, 9,010 symbol-month predictions):
+    a recency-weighted median of monthly range_pct predicts a stock's NEXT
+    month range_pct modestly better than the flat all-time median used
+    elsewhere in this project - mean abs error 4.87pp -> 4.79pp at a
+    6-month half-life (the best of several tried: 2/3/4/6/9/12/18 months),
+    closer in ~50% of cases vs ~45% for the flat median. Real but modest -
+    doesn't solve the deeper "can't confirm range-bound behavior until
+    mid-month, by when premium has already decayed" problem raised by the
+    user, but it's a free improvement over the flat metric with no new data
+    needed, so it's added here as an additional score component alongside
+    (not replacing) the existing flat metrics from ALL_STOCKS_COMPARISON.xlsx.
+
+    Weight for a month `k` months before now: 0.5 ** (k / halflife_months) -
+    a month from 6 months ago counts half as much as last month, a year ago
+    a quarter as much, etc. Reads each symbol's own Monthly Range sheet for
+    range_pct (the metric actually tested above), and applies the SAME
+    weighting principle to max_adverse_pct from the Flips sheet (weighted by
+    each closed flip's exit_date) as a consistent extension - NOT
+    independently re-tested, since the tested result was specific to
+    range_pct; included on the reasoning that a metric measuring "how this
+    stock behaves lately" should behave consistently across both bases.
+    """
+    from datetime import datetime
+    import pandas as pd
+
+    now = pd.Timestamp(datetime.now())
+    rows = []
+
+    for symbol in symbol_list:
+        path = os.path.join(EXPORTS_DIR, f"{symbol}_full_report.xlsx")
+        if not os.path.exists(path):
+            rows.append({"symbol": symbol})
+            continue
+        try:
+            monthly = pd.read_excel(path, sheet_name="Monthly Range")
+            flips = pd.read_excel(path, sheet_name="Flips")
+        except Exception:
+            rows.append({"symbol": symbol})
+            continue
+
+        row = {"symbol": symbol}
+
+        if not monthly.empty:
+            monthly = monthly.copy()
+            monthly["month_start"] = monthly["year_month"].apply(
+                lambda ym: pd.Period(ym, freq="M").start_time
+            )
+            months_ago = (now - monthly["month_start"]).dt.days / 30.44
+            months_ago = months_ago.clip(lower=0)
+            weights = 0.5 ** (months_ago / halflife_months)
+            row["recency_weighted_range_pct"] = round(
+                _weighted_median(monthly["range_pct"].values, weights.values), 2
+            )
+
+        closed = flips[flips["status"] == "CLOSED"].copy() if not flips.empty else flips
+        if closed is not None and not closed.empty:
+            closed["exit_date"] = pd.to_datetime(closed["exit_date"])
+            if closed["exit_date"].dt.tz is not None:
+                closed["exit_date"] = closed["exit_date"].dt.tz_localize(None)
+            months_ago = (now - closed["exit_date"]).dt.days / 30.44
+            months_ago = months_ago.clip(lower=0)
+            weights = 0.5 ** (months_ago / halflife_months)
+            row["recency_weighted_adverse_pct"] = round(
+                _weighted_median(closed["max_adverse_pct"].values, weights.values), 2
+            )
+
+        rows.append(row)
+
+    return pd.DataFrame(rows)
+
+def score_for_short_iron_condor(comparison_df, min_flips=30, gap_risk_threshold=4.0, halflife_months=6):
     """
     Ranks stocks for short iron condor suitability — favors stocks that stay
     range-bound, with tight monthly swings and quick-reverting trends.
+
+    Includes a recency-weighted range/adverse component alongside the flat
+    all-time metrics — see _add_recency_weighted_short_ic_stats() for the
+    tested justification. This does NOT solve the core timing problem this
+    was built to help with (real confirmation that THIS month is holding its
+    range only firms up mid-month, by when premium has already decayed) -
+    that was tested directly (trend age at month-start vs realized monthly
+    range_pct, correlation 0.017 across 10,671 symbol-months - no leading
+    signal there) and remains unsolved; a genuine leading fix would need
+    live IV-rank data, which Kite doesn't provide directly and would require
+    a real Black-Scholes IV solver plus historical reconstruction - out of
+    scope for this change, tracked separately.
     """
     df = comparison_df[comparison_df["Total flips (closed)"] >= min_flips].copy()
+
+    recency = _add_recency_weighted_short_ic_stats(df["symbol"].tolist(), halflife_months=halflife_months)
+    df = df.merge(recency, on="symbol", how="left")
 
     df["_score_range_median"]    = _pct_rank(df["Median monthly range_pct"], lower_is_better=True)
     df["_score_adverse_median"]  = _pct_rank(df["Median max_adverse_pct"], lower_is_better=True)
     df["_score_range_worst"]     = _pct_rank(df["Largest monthly range_pct"], lower_is_better=True)
     df["_score_adverse_worst"]   = _pct_rank(df["Worst max_adverse_pct (4yr)"], lower_is_better=True)
     df["_score_duration_median"] = _pct_rank(df["Median duration (days)"], lower_is_better=True)  # flipped vs credit spreads
+    df["_score_range_recency"]   = _pct_rank(df["recency_weighted_range_pct"], lower_is_better=True)
+    df["_score_adverse_recency"] = _pct_rank(df["recency_weighted_adverse_pct"], lower_is_better=True)
 
     df["short_ic_score"] = (
         df["_score_range_median"]    * 3 +
         df["_score_adverse_median"]  * 3 +
         df["_score_range_worst"]     * 3 +
         df["_score_adverse_worst"]   * 2 +
-        df["_score_duration_median"] * 2
-    ) / 13
+        df["_score_duration_median"] * 2 +
+        df["_score_range_recency"]   * 3 +
+        df["_score_adverse_recency"] * 2
+    ) / 18
     df["short_ic_score"] = df["short_ic_score"].round(1)
 
     df["gap_risk_flag"] = df["Worst single gap (4yr)"].apply(
@@ -163,9 +270,12 @@ def score_for_short_iron_condor(comparison_df, min_flips=30, gap_risk_threshold=
     )
 
     result_cols = ["symbol", "short_ic_score", "gap_risk_flag", "Total flips (closed)",
-                    "Median monthly range_pct", "Largest monthly range_pct",
-                    "Median max_adverse_pct", "Worst max_adverse_pct (4yr)",
+                    "Median monthly range_pct", "recency_weighted_range_pct",
+                    "Largest monthly range_pct",
+                    "Median max_adverse_pct", "recency_weighted_adverse_pct",
+                    "Worst max_adverse_pct (4yr)",
                     "Median duration (days)", "Worst single gap (4yr)"]
+    result_cols = [c for c in result_cols if c in df.columns]
 
     result = df[result_cols].sort_values("short_ic_score", ascending=False).reset_index(drop=True)
     result = _add_volatility_persistence_flag(result)
