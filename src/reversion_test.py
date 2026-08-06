@@ -15,7 +15,16 @@ def analyze_duration_memory(symbol):
     if len(closed) < 15:
         return None
 
-    closed["duration_days"] = pd.to_timedelta(closed["duration"]).dt.total_seconds() / 86400
+    # duration comes back from the Excel round-trip as a plain float already
+    # in days (e.g. 15.166667), NOT a timedelta string - pd.to_timedelta() on
+    # a bare float defaults to nanoseconds and silently zeroes every
+    # absolute-day output below (confirmed on real data, see README Stage 8b).
+    # excess_to_median_ratio was unaffected since it's a self-cancelling
+    # ratio - only these absolute columns were ever wrong.
+    if pd.api.types.is_numeric_dtype(closed["duration"]):
+        closed["duration_days"] = closed["duration"].astype(float)
+    else:
+        closed["duration_days"] = pd.to_timedelta(closed["duration"]).dt.total_seconds() / 86400
     median_dur = closed["duration_days"].median()
 
     crossed = closed[closed["duration_days"] > median_dur].copy()

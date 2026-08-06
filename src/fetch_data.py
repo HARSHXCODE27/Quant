@@ -1,4 +1,5 @@
 import os
+import time
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -14,12 +15,27 @@ def get_instrument_token(kite, symbol, exchange="NSE"):
     raise ValueError(f"Symbol '{symbol}' not found on {exchange}")
 
 def fetch_historical_data(kite, instrument_token, from_date, to_date, interval="4hour"):
-    """Pulls candles in chunks, since Kite caps each request at ~400 days for this interval."""
+    """
+    Pulls candles in chunks, since Kite caps each request at ~400 days for this
+    interval. Kite's historical data endpoint is rate-limited to 3 requests/second
+    (no daily cap) - a 0.35s pause between chunks keeps any single multi-chunk
+    fetch safely under that, regardless of how many chunks a wide from/to window
+    needs. This didn't matter for the 4H/1H pipelines (short enough windows to
+    rarely need more than 1-2 chunks), but a long 1D lookback (e.g. the pledged-
+    securities screener's several-year windows) can need 5-10+ chunks for one
+    symbol, which hit `NetworkException: Too many requests` with no pacing here.
+    """
     all_candles = []
     chunk_start = from_date
+    first_chunk = True
 
     while chunk_start < to_date:
         chunk_end = min(chunk_start + timedelta(days=395), to_date)
+
+        if not first_chunk:
+            time.sleep(0.35)
+        first_chunk = False
+
         print(f"Fetching {chunk_start.date()} to {chunk_end.date()}...")
 
         data = kite.historical_data(

@@ -243,6 +243,272 @@ def score_for_debit_spread(comparison_df, min_trades=30, skew_gap_threshold=0.3)
     ranked = df[result_cols].sort_values("debit_spread_score", ascending=False).reset_index(drop=True)
     return ranked, watchlist
 
+def score_for_option_buying(comparison_df, min_trades=20, skew_gap_threshold=0.3):
+    """
+    Ranks stocks/indices for naked-option-buying suitability (Stage 11),
+    reading exports/OPTION_BUYING_COMPARISON.xlsx (option_buying_scale_pipeline.py),
+    NOT the debit spread or Supertrend comparison files - different exit
+    logic (trailing stop, no fixed target) even though the entry signal is
+    shared with the debit spread strategy.
+
+    Same weighting philosophy as score_for_debit_spread, for direct
+    comparability: median_r_achieved weighted highest (not avg_r_achieved) -
+    a healthy average can still be a few outlier TIME/TRAIL_STOP wins
+    carrying a typically-losing trade, median catches that. Same
+    outlier_reliance_flag as the debit spread scorer, same threshold.
+
+    min_trades=20 here, NOT the 30 used by score_for_debit_spread - this
+    strategy now runs through apply_4h_trend_filter() (Stage 11 hard
+    filter), which roughly halves signal frequency by construction (drops
+    every 1H entry that disagrees with the symbol's 4H trend). After the
+    filter, per-instrument closed_trades over the same window tops out
+    around 27 with a mean of ~19 - a 30-trade bar would leave nothing
+    ranked at all. 20 keeps a real split between "more trades, more
+    trustworthy" and "thin but still real" rather than an arbitrary
+    unreachable number; the >=15 floor used everywhere else in this
+    project is still enforced upstream when the comparison file itself
+    gets built.
+
+    Full-universe result WITH the 4H filter (153 instruments qualified,
+    same window): 70.6% positive avg_r_achieved (vs 72.5% pre-filter,
+    72.5% pre-filter had more but noisier trades), mean avg R 0.198 (vs
+    0.126 pre-filter), median 0.170 (vs 0.100), mean win rate 54.9% (vs
+    51.1%) - the filter concentrates the edge into fewer, better-qualified
+    trades. Std also widened (0.327 vs 0.224) since each instrument now has
+    roughly half as many trades feeding its own average - expected, not a
+    red flag; the ranking below is exactly what exists to separate the
+    reliable names from the noisy ones under a thinner sample.
+
+    Returns (ranked, watchlist) - same shape as score_for_debit_spread.
+    """
+    df = comparison_df[comparison_df["closed_trades"] >= min_trades].copy()
+
+    watchlist_cols = ["symbol", "closed_trades", "win_rate_pct", "avg_r_achieved",
+                      "median_r_achieved", "median_candles_held", "pct_trades_trailing_activated"]
+    watchlist = comparison_df[comparison_df["closed_trades"] < min_trades].copy()
+    watchlist = watchlist[[c for c in watchlist_cols if c in watchlist.columns]]
+    watchlist = watchlist.sort_values("avg_r_achieved", ascending=False).reset_index(drop=True)
+
+    df["_score_median_r"] = _pct_rank(df["median_r_achieved"], lower_is_better=False)
+    df["_score_win_rate"] = _pct_rank(df["win_rate_pct"], lower_is_better=False)
+    df["_score_avg_r"]    = _pct_rank(df["avg_r_achieved"], lower_is_better=False)
+    df["_score_candles"]  = _pct_rank(df["median_candles_held"], lower_is_better=True)  # faster-resolving = less theta exposure
+
+    df["option_buying_score"] = (
+        df["_score_median_r"] * 4 +
+        df["_score_win_rate"] * 3 +
+        df["_score_avg_r"]    * 2 +
+        df["_score_candles"]  * 1
+    ) / 10
+    df["option_buying_score"] = df["option_buying_score"].round(1)
+
+    skew_gap = df["avg_r_achieved"] - df["median_r_achieved"]
+    df["outlier_reliance_flag"] = skew_gap.apply(
+        lambda x: f"⚠ RELIES ON OUTLIER WINS (avg-median gap {x:.2f}R)" if x > skew_gap_threshold else ""
+    )
+
+    result_cols = ["symbol", "option_buying_score", "outlier_reliance_flag",
+                   "closed_trades", "win_rate_pct", "avg_r_achieved",
+                   "median_r_achieved", "median_candles_held", "pct_trades_trailing_activated"]
+    result_cols = [c for c in result_cols if c in df.columns]
+
+    ranked = df[result_cols].sort_values("option_buying_score", ascending=False).reset_index(drop=True)
+    return ranked, watchlist
+
+def _add_pledged_up_flip_stats(symbol_list, pledged_exports_dir):
+    """
+    Reads each symbol's OWN exports/pledged_1d/{symbol}_full_report.xlsx
+    Flips sheet and computes stats from CLOSED UP flips only - not the
+    blended UP+DOWN stats already sitting in PLEDGED_1D_COMPARISON.xlsx.
+
+    Why recompute rather than reuse the comparison file's columns: the
+    Stage 11 strategy this ranks ("buy in uptrend, exit in downtrend on
+    1D") only ever ENTERS on a UP flip - a DOWN flip's pct_move describes a
+    trade nobody using this strategy takes, so blending it in would score
+    instruments on trades they don't make. Also computes a real
+    median_pct_move_up (not just the average already in the comparison
+    file) - same median-over-mean standard used everywhere else in this
+    project ("Median preferred over average throughout... data is
+    outlier-skewed" in the assumptions log), and lets the ranking flag
+    avg-vs-median skew the same way score_for_debit_spread/
+    score_for_option_buying already do.
+    """
+    import os
+    rows = []
+    for symbol in symbol_list:
+        path = os.path.join(pledged_exports_dir, f"{symbol}_full_report.xlsx")
+        if not os.path.exists(path):
+            rows.append({"symbol": symbol, "up_closed_count": 0})
+            continue
+        try:
+            flips = pd.read_excel(path, sheet_name="Flips")
+        except Exception:
+            rows.append({"symbol": symbol, "up_closed_count": 0})
+            continue
+
+        up_closed = flips[(flips["status"] == "CLOSED") & (flips["direction"] == "UP")]
+        if up_closed.empty:
+            rows.append({"symbol": symbol, "up_closed_count": 0})
+            continue
+
+        rows.append({
+            "symbol": symbol,
+            "up_closed_count": len(up_closed),
+            "median_pct_move_up": round(up_closed["pct_move"].median(), 2),
+            "avg_pct_move_up": round(up_closed["pct_move"].mean(), 2),
+            "win_rate_up_pct": round((up_closed["pct_move"] > 0).mean() * 100, 1),
+            "median_max_adverse_up": round(up_closed["max_adverse_pct"].median(), 2),
+        })
+
+    return pd.DataFrame(rows)
+
+def score_for_pledged_trend_following(min_flips=15, gap_risk_threshold=10.0,
+                                       skew_gap_threshold=3.0, fno_symbol_list=None):
+    """
+    Ranks the pledged-securities 1D universe (Stage 10/11) for the strategy
+    it's actually meant to answer: buy the share/ETF itself on a fresh UP
+    flip, exit on the opposite DOWN flip. Different from every other scorer
+    in this project in two ways:
+
+    1. It scores buying the UNDERLYING directly, not an options structure -
+       so unlike credit spreads/short IC (which favor price staying
+       CONTAINED, a premium-selling objective) or debit spread/option
+       buying (defined-risk, ATR-bounded), this favors a large favorable
+       move on the UP flips specifically. Built from `_add_pledged_up_flip_stats()`,
+       which recomputes real UP-only closed-flip stats per symbol rather
+       than reusing PLEDGED_1D_COMPARISON.xlsx's blended UP+DOWN columns.
+
+    2. Because buying the underlying needs no F&O contract, this scores the
+       FULL 154-symbol universe (shares AND ETFs), not just the
+       `directly_fno_tradable` subset — unlike the options strategies, this
+       one doesn't care whether a derivative exists.
+
+    Shares and ETFs are ranked SEPARATELY (two groups, each own percentile
+    scale), not blended into one list — ETFs structurally have smaller
+    typical moves than individual stocks, so a blended rank would make
+    every ETF look permanently worse for reasons that have nothing to do
+    with quality (same reasoning behind the live screener's existing
+    Shares/ETF split).
+
+    gap_risk_threshold=10.0, NOT the 5.0 inherited from the 4H credit-spread
+    scorer at first: checked the real "Worst single gap (4yr)" distribution
+    across all 140 processed instruments (median 6.94%, mean 8.3%) and found
+    5% flagged 94 of 96 ranked instruments - basically everyone, which
+    defeats the point of a flag (it should separate candidates, not fire
+    universally). 10% sits right at the natural break between the 80th
+    percentile (~10%) and 85th (~13.1%), flagging roughly the top-quintile
+    gap-prone names (17.9% of the universe) instead of nearly all of it.
+    5% made sense for the 4H strategies' shorter, faster-resolving trades;
+    1D positions are held for weeks-to-months, long enough that almost any
+    stock will show one >5% single-day move somewhere in a multi-year
+    history without that being unusually risky.
+
+    Weights: median_pct_move_up highest (the actual expected gain when the
+    trade works - the real point of a directional buy-hold), win_rate_up
+    next, median_max_adverse_up penalized (drawdown pain during the hold -
+    matters more here than for an options trade, since there's no defined
+    max loss). No target/candles-held component - unlike options, holding
+    a share/ETF costs no theta, so speed-of-resolution isn't a real cost.
+
+    **Consistency (skew_gap = avg_pct_move_up - median_pct_move_up) is its
+    own weighted component, not just a cosmetic flag.** Originally
+    `outlier_reliance_flag` was purely a label sitting next to a score that
+    never actually reflected it - a stock whose average was inflated by a
+    handful of lucky wins could still out-score a more consistent one on
+    raw median/win-rate/adverse numbers alone. Real example that surfaced
+    this: BAJAJFINSV (avg 12.49%, median only 3.96%, gap 8.53pp) scored
+    HIGHER than TATASTEEL (avg 9.68%, median 3.76%, gap 5.92pp) under the
+    old formula, despite BAJAJFINSV's median being barely better and its
+    gap being meaningfully worse - the flashy average was doing the
+    talking, and the flag next to it wasn't actually changing anything. Now
+    skew_gap is percentile-ranked (lower gap = better) and weighted into
+    the score directly, so a wide gap actually costs points instead of
+    just being noted alongside an unaffected number.
+
+    min_flips filters on UP-closed-flip count specifically (not total
+    flips) - a symbol with 20 total flips but only 4 of them UP-and-closed
+    doesn't have a trustworthy median_pct_move_up. Same >=15 floor used
+    everywhere else in this project.
+
+    Returns (ranked, watchlist) - ranked has both Shares and ETFs (use the
+    `security_type` column to split), scored within their own group;
+    watchlist is everything below min_flips, sorted by avg_pct_move_up.
+    """
+    from src.pledged_securities import load_pledged_universe
+
+    pledged_exports_dir = os.path.join(PROJECT_ROOT, "exports", "pledged_1d")
+    comparison_path = os.path.join(EXPORTS_DIR, "PLEDGED_1D_COMPARISON.xlsx")
+    comparison = pd.read_excel(comparison_path)
+
+    universe = load_pledged_universe(fno_symbol_list)[["symbol", "security_type"]]
+
+    up_stats = _add_pledged_up_flip_stats(comparison["symbol"].tolist(), pledged_exports_dir)
+
+    merged = comparison[["symbol", "Worst single gap (4yr)"]].merge(up_stats, on="symbol", how="left")
+    merged = merged.merge(universe, on="symbol", how="left")
+    merged["up_closed_count"] = merged["up_closed_count"].fillna(0)
+
+    qualified = merged[merged["up_closed_count"] >= min_flips].copy()
+
+    watchlist_cols = ["symbol", "security_type", "up_closed_count", "win_rate_up_pct",
+                       "avg_pct_move_up", "median_pct_move_up", "median_max_adverse_up"]
+    watchlist = merged[merged["up_closed_count"] < min_flips].copy()
+    watchlist = watchlist[[c for c in watchlist_cols if c in watchlist.columns]]
+    watchlist = watchlist.sort_values("avg_pct_move_up", ascending=False).reset_index(drop=True)
+
+    scored_groups = []
+    for _, group in qualified.groupby("security_type"):
+        group = group.copy()
+        group["_score_median_move"] = _pct_rank(group["median_pct_move_up"], lower_is_better=False)
+        group["_score_win_rate"]    = _pct_rank(group["win_rate_up_pct"], lower_is_better=False)
+        group["_score_adverse"]     = _pct_rank(group["median_max_adverse_up"], lower_is_better=True)
+
+        # Consistency component - the fix for a real problem found in this
+        # project: the outlier_reliance_flag used to be purely cosmetic, a
+        # label sitting next to a score that never actually reflected it. A
+        # stock whose average was inflated by a few lucky wins could still
+        # out-score a more consistent one on raw median/win-rate/adverse
+        # numbers alone, which is misleading - a flag that doesn't move the
+        # number isn't doing its job. skew_gap (avg - median pct_move_up) is
+        # now its own percentile-ranked component, LOWER gap = better score
+        # (a tighter gap means the median is a trustworthy estimate of what
+        # actually happens; a wide gap means a few outliers are propping up
+        # the average and the "real" typical outcome may be weaker than it
+        # looks).
+        group["_skew_gap"] = group["avg_pct_move_up"] - group["median_pct_move_up"]
+        group["_score_consistency"] = _pct_rank(group["_skew_gap"], lower_is_better=True)
+
+        group["pledged_trend_score"] = (
+            group["_score_median_move"]  * 4 +
+            group["_score_win_rate"]     * 3 +
+            group["_score_adverse"]      * 2 +
+            group["_score_consistency"]  * 2
+        ) / 11
+        group["pledged_trend_score"] = group["pledged_trend_score"].round(1)
+        scored_groups.append(group)
+
+    scored = pd.concat(scored_groups, ignore_index=True)
+
+    # outlier_reliance_flag still shown - now confirmatory context for what
+    # the score already accounts for, not a contradiction of it.
+    scored["outlier_reliance_flag"] = scored["_skew_gap"].apply(
+        lambda x: f"⚠ RELIES ON OUTLIER WINS (avg-median gap {x:.2f}pp)" if x > skew_gap_threshold else ""
+    )
+    scored["gap_risk_flag"] = scored["Worst single gap (4yr)"].apply(
+        lambda x: f"⚠ HIGH GAP RISK (>{gap_risk_threshold}%)" if pd.notna(x) and x > gap_risk_threshold else ""
+    )
+
+    result_cols = ["symbol", "security_type", "pledged_trend_score", "outlier_reliance_flag",
+                   "gap_risk_flag", "up_closed_count", "win_rate_up_pct", "avg_pct_move_up",
+                   "median_pct_move_up", "median_max_adverse_up"]
+    result_cols = [c for c in result_cols if c in scored.columns]
+
+    ranked = scored[result_cols].sort_values(
+        ["security_type", "pledged_trend_score"], ascending=[True, False]
+    ).reset_index(drop=True)
+
+    return ranked, watchlist
+
 def save_ranking(ranked_df, filename):
     path = os.path.join(EXPORTS_DIR, filename)
     ranked_df.to_excel(path, sheet_name="Ranked", index=False)

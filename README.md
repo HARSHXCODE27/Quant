@@ -74,6 +74,42 @@
 ### Stage 8 — Live tracking / automation (future, not started)
 - [ ] Only revisit if manual checking becomes a proven, felt bottleneck after real trading
 
+### Stage 8b — Exhaustion test (exit-side, credit spreads) ✅
+- [x] `src/exhaustion_test.py` + `notebooks/11_exhaustion_test.ipynb` — different
+      question from `reversion_test.py`. That test asks whether an aged trend
+      predicts reversal AT ENTRY (no — momentum, ~13-15% longer). This asks,
+      for an already-OPEN position: once a trend crosses its own median/75th/90th
+      percentile duration, how much MORE time typically remains, and is that
+      tightly clustered enough to act on as a profit-booking signal? Pools
+      excess as a ratio of the checkpoint (not raw days, to avoid mixing
+      stocks of very different typical durations), across all 216 instruments.
+- [x] **Verdict: no usable exhaustion signal at any checkpoint (tested,
+      honest negative result).** Coefficient of variation (std/mean) sits at
+      ~1.0-1.03 at all three checkpoints (median, p75, p90) — the spread of
+      "how much longer it ran" is roughly as large as the average itself,
+      with no tightening the deeper into the tail. Even at p90, 91.3% of
+      crossings still needed up to double the p90 duration again before
+      ending. Consistent with (not contradicting) the entry-side finding —
+      duration behaves like momentum without a predictable expiry. Per scope,
+      no live-check function was built, since none of the three checkpoints
+      cleared the bar for "tight enough to act on" — keep managing exits by
+      price action/manual judgment, same as before.
+- [x] **Found and fixed a real bug while validating, in the NEW file only:**
+      `reversion_test.py`'s `pd.to_timedelta(closed["duration"])` assumes a
+      timedelta string, but the real `duration` column round-trips through
+      Excel as a plain float already in days — `pd.to_timedelta()` on a bare
+      float defaults to nanoseconds, silently collapsing every absolute-day
+      output to 0.0. Confirmed by running `reversion_test.py` itself against
+      real exports (ABB: `median_duration` came back 0.0). The documented
+      1.13-1.15 `excess_to_median_ratio` finding above is unaffected — it's a
+      pure ratio, so the same broken scaling cancels out top and bottom — but
+      `reversion_test.py`'s own per-stock `median_duration`/
+      `avg_excess_days_after_median` columns are silently wrong if read
+      directly. `exhaustion_test.py` handles both possible reload shapes
+      correctly (see its `_duration_to_days` helper). `reversion_test.py`
+      itself was deliberately left unmodified — out of scope for this session,
+      flagged for a separate fix if wanted.
+
 ### Stage 9 — Debit spread signal (EMA/ADX, 1H) — in progress
 - [x] `src/ema_adx_signal.py` — NEW module, parallel to `flip_analysis.py` not a
       modification of it. EMA(9/21) crossover + rising-ADX confirmation, built for
@@ -212,6 +248,448 @@ runs). Notebook numbering was intentionally left with gaps rather than
 renumbered — nothing here references notebooks by number, and gaps already
 existed (19 was never used) without causing issues.
 
+### Stage 10 — Pledged-securities 1D Supertrend screener ✅ (built, not yet run)
+- [x] New sub-project, separate from the F&O strategies above: a live Supertrend
+      screener over the securities actually eligible for pledging as collateral
+      (`data/Zerodha - Approved Securities.csv`, 8,265 rows), on the **1D**
+      timeframe instead of 4H — same Supertrend logic, different question
+      ("is this pledged position's trend still intact") rather than a
+      trade-entry signal by default.
+- [x] **Cleaned the source file first, then validated the cleaning before
+      building anything:** filtered to `security_type` in {Equity, ETF} only
+      (dropped Mutual Funds/Government Securities/TBills/Sovereign Gold Bond),
+      `haircut_value <= 11`. ETFs were further grouped into 39 themes via a
+      keyword classifier (symbol + security_name) since many are near-duplicates
+      of each other (12 Gold ETFs, 17 Nifty-50-tracking ETFs, etc.) — grouped
+      for the user to pick one per theme, not auto-selected. Final user-curated
+      list: 116 shares + 38 ETFs (one per theme, all haircut<=11) — saved at
+      `data/processed/Zerodha_Approved_Securities_Cleaned.xlsx`.
+- [x] **62 of the 116 pledgeable shares are already in the existing 218-stock F&O
+      universe** — checked directly against `exports/*_full_report.xlsx`. This
+      is the highest-value starting set: no new signal-generation logic needed,
+      same Supertrend flip meaning as the existing credit-spread entries, just
+      timed off 1D. The other 54 shares and all 38 ETFs have no listed NSE F&O
+      contract of their own (confirmed: NSE doesn't list options on individual
+      ETFs, only on ~190 stocks + a handful of indices) — a flip on these means
+      something different depending on the instrument:
+      - 5 broad-index ETF categories (Nifty 50, Nifty Next 50, Nifty 100, Bank
+        Nifty, Sensex) track indices already in the existing 8-index universe —
+        the signal should be read off the INDEX itself (no tracking-error drag),
+        the ETF's only role is being the thing that's actually pledged.
+      - Gold/Silver: no NSE F&O exists on the ETF, but it's a clean,
+        already-proven proxy signal for MCX Gold/Silver futures (matches the
+        user's existing GOLDCASE-based approach).
+      - Everything else (~30 sector/factor/international/bond ETF themes, and
+        the 54 non-F&O shares): a flip is informational only — no direct,
+        liquid F&O instrument exists to act on it.
+- [x] `src/pledged_securities.py` — NEW, loads the 154-symbol universe from the
+      cleaned workbook and flags `directly_fno_tradable` per symbol (checked
+      against the existing F&O universe, or an optional live list passed in).
+- [x] `src/pledged_1d_pipeline.py`, `src/pledged_1d_compare.py`,
+      `src/pledged_1d_screener.py` — NEW, parallel to `scale_pipeline.py`/
+      `compare_stocks.py`/`daily_screener.py`, **not modifications of them.**
+      Reuses `supertrend.py`/`flip_analysis.py`/`monthly_range.py`/
+      `summary_stats.py` completely unchanged (all already interval-agnostic).
+      Writes to a separate `exports/pledged_1d/` folder and
+      `PLEDGED_1D_COMPARISON.xlsx` — **critical**, since `scale_pipeline.py`'s
+      export function hardcodes `exports/{symbol}_full_report.xlsx` with no
+      interval in the filename; reusing it directly on 1D data would have
+      silently overwritten the existing 4H reports for all 62 overlapping
+      shares. Verified this doesn't happen (see below).
+- [x] `from_date=2015-01-01` used for the scale notebook, deliberately much
+      further back than the 4H universe's window — daily candles are ~6x
+      coarser than 4H, so flips are proportionally rarer per calendar year;
+      recently-listed instruments just get less history automatically, no error.
+- [x] Notebooks `12_pledged_1d_scale_all.ipynb`, `13_pledged_1d_compare.ipynb`,
+      `14_pledged_1d_live_screener.ipynb` — same full-scale/standalone-compare/
+      live-screener three-way split already used for credit spreads and debit
+      spread.
+- [x] **Verified with synthetic data before handing off** (no live Kite access
+      or `pandas_ta` in the build sandbox): generated 750 synthetic daily
+      candles, ran a hand-rolled Supertrend equivalent through the REAL
+      `detect_flips`/`compute_monthly_range`/`compute_summary_stats` and the
+      NEW export/compare/screener functions unchanged. Confirmed the export
+      landed in `exports/pledged_1d/` and did NOT create or touch anything in
+      the top-level `exports/` folder; confirmed the comparison and screener
+      modules correctly read it back. Synthetic test artifacts deleted after.
+- [x] **Run against real data (notebooks 12/13):** 140 of 154 instruments
+      processed successfully. Real 1D duration stats confirm daily flips run
+      much longer than 4H ones, as expected (10-period ATR now spans 10 trading
+      days instead of ~1.7): median duration ~49 days, 75th percentile
+      ~82-99 days, 90th percentile ~120-146 days (mean pulled up by a handful
+      of extreme outliers past 1000 days on thin-flip instruments). 37 of 140
+      instruments have fewer than 15 closed flips — same "treat as unproven
+      until more calendar time passes" rule as everywhere else in this project.
+- [x] **Found and fixed a real bug on first live-screener run:** notebook 14
+      originally reused the scale notebook's `from_date=2015` full-history
+      window for what should be a short live refresh — fetching ~11 years of
+      daily data per symbol with no pause between symbols hit Kite's rate limit
+      (`NetworkException: Too many requests`) immediately. Fixed using the real
+      duration stats above: refresh window shortened to a rolling 600 days
+      (covers the 90th percentile for nearly every instrument, only 2 chunked
+      requests instead of ~11), plus a 1-second pause between symbols — same
+      `delay_seconds` reasoning already used in every scale pipeline, just
+      missing here since a small shortlist made it easy to overlook. Trade-off
+      stated plainly in the notebook: an instrument with a currently-open trend
+      older than ~600 days will have its reported `trend_age_days` understated
+      (truncated to the fetch window) — direction is still correct regardless,
+      only the age/percentile-crossing flags could be slightly off in those
+      rare cases.
+- [x] **The 600-day/1-second fix above wasn't enough — still hit the same rate
+      limit on the next run.** Root cause was one level deeper:
+      `fetch_data.py`'s `fetch_historical_data()` chunks any request wider than
+      ~395 days into multiple calls, with **zero pause between chunks** — Kite's
+      historical data endpoint is rate-limited to 3 requests/second (confirmed:
+      no separate daily cap). A 600-day window still needs 2 chunks fired back
+      to back with no pacing, which can exceed 3/sec on its own regardless of
+      the delay between symbols. Fixed in `fetch_data.py` directly (a shared
+      file every pipeline in this project uses) by adding a 0.35s pause between
+      chunks — only fires when a fetch actually needs 2+ chunks, so every
+      existing 4H/1H single-chunk fetch is completely unaffected. This bug was
+      always latent for any sufficiently wide window; it just never surfaced
+      before because the 4H/1H pipelines' typical windows rarely needed more
+      than 1-2 chunks per symbol.
+- [x] **Redesigned `14_pledged_1d_live_screener.ipynb` after feedback** — the
+      original version refreshed a small hand-picked shortlist live from Kite
+      before checking it (same pattern as the debit spread screener). Two
+      problems with that for this specific use case: (1) it only checks
+      whatever's in the shortlist variable, not the full cleaned universe, and
+      (2) it re-fetches from Kite every time, which is exactly what caused the
+      rate-limit issue above. Redesigned to do neither: it now just READS
+      whatever's already in `exports/pledged_1d/` (populated by notebook 12 /
+      `reprocess_all()`, a separate periodic step) for every symbol in the
+      cleaned list, and shows two tables — Shares and ETFs — each with
+      direction and `trend_age_days`, sorted youngest-first. No live Kite
+      calls in this notebook at all, so no rate-limit exposure for daily
+      viewing. Of 154 symbols, 140 have a report; 14 (mostly REITs/InvITs —
+      EMBASSY, MINDSPACE, INDIGRID, PGINVIT, IRBINVIT, IRB — plus the Liquid
+      ETF LIQUIDCASE and a few others) didn't get processed in the first
+      notebook 12 run — worth a look next time it's re-run, not yet
+      investigated why.
+- [x] **Corrected again — read-only was the wrong trade-off.** A screener that
+      never re-fetches can go stale the exact same way already documented for
+      `daily_screener.py` (ITC once showed DOWN/23-days-old when a fresh fetch
+      would've shown UP/5-days-old) — if a symbol flips after the last actual
+      fetch, the saved report keeps reporting the old direction/age
+      indefinitely, no matter how recently you "check" it. The read-only design
+      only existed to dodge the rate-limit bug above; now that the real cause
+      (chunk pacing) is fixed, a genuine live refresh of the full 154-symbol
+      list is fast enough (short 600-day window, 1-2 paced chunks per symbol,
+      a few minutes total) to just do properly. Notebook 14 now runs
+      `run_all_instruments(..., force_refresh=True)` across the whole cleaned
+      list every time, THEN reports status — same freshness guarantee as
+      "always refresh before acting" already established for the credit-spread
+      screener, just applied to the full universe instead of a hand-picked
+      shortlist.
+- [x] **Rate limit hit a third time even with chunk pacing + a 1s between-symbol
+      delay** — pacing that sits right at Kite's documented 3 req/sec ceiling
+      (~0.35-0.4s spacing) apparently doesn't leave enough real-world margin
+      for jitter, and repeated trips of the same limit in one session may add
+      a further temporary cooldown on top. Widened the margin instead of
+      tuning closer to the edge: window shortened to 390 days (under
+      `fetch_data.py`'s 395-day chunk threshold, so every symbol now needs
+      exactly ONE request, removing the within-symbol chunk-pacing question
+      entirely), and `delay_seconds` raised to a full 1.0s between symbols.
+      Slower end-to-end, deliberately — real headroom over cutting it close a
+      fourth time.
+- [x] **Originally decided NOT to build a ranking/score for this universe —
+      reversed once the real purpose was clarified.** The original reasoning
+      (no tested exit logic, structurally mixed F&O-tradable/proxy/
+      informational universe, ranking implies more trust than earned) was
+      sound for "is my collateral's trend still intact," which is what this
+      screener was built to answer. But the universe's ACTUAL intended use
+      turned out to be different: buy the share/ETF itself on a fresh UP
+      flip, exit on the opposite DOWN flip — literal underlying ownership,
+      not an options structure. That reframing removes both original
+      objections: buying the underlying needs no F&O contract (so the
+      mixed-tradability split stops being a scoring blocker — every symbol
+      is equally, directly actionable this way), and `flip_analysis.py`'s
+      per-flip `pct_move`/`max_adverse_pct` — already computed, unchanged,
+      for every historical flip — IS a real, tested trade record for exactly
+      this strategy, just never framed as one. See `score_for_pledged_trend_following()`
+      below.
+- [x] **Real gap found and fixed: notebook 14's live refresh was silently
+      shrinking the deep history notebook 12 built.** Discovered while
+      building the ranking below — `up_closed_count` (closed UP flips per
+      symbol) maxed out at 8 across the whole universe, nowhere near the
+      >=15 floor used everywhere else in this project. Root cause: notebook
+      14 was calling `run_all_instruments(..., force_refresh=True)` with a
+      short 390-day window across the FULL 154-symbol universe on every
+      routine run — and `process_instrument()`/`save_raw_data()` do a full
+      REPLACE, not an update, so every live check was quietly throwing away
+      notebook 12's 2015-onward history and overwriting it with just that
+      short window. After repeated runs, every symbol's saved data had
+      collapsed to ~1 year (confirmed directly: ABBOTINDIA's raw daily file
+      only spanned 2025-07-14 to 2026-08-06 before the fix). Fixed with a
+      new `process_instrument_incremental()` in `pledged_1d_pipeline.py`:
+      EXTENDS existing saved history with just the recent catch-up window
+      instead of replacing it outright (does a genuine deep fetch only the
+      first time a symbol has no saved data at all). Verified with a
+      mocked-fetch test before trusting it: simulated a short-window live
+      refresh against ABBOTINDIA's real 264-row (shrunk) history and
+      confirmed the result correctly merged to 401 rows (extended, deduped,
+      no gaps) rather than replacing it — confirmed the merge logic works
+      before recommending it, not just that it runs. Notebook 14 now uses
+      `incremental=True`. This fix only stops the erosion going forward —
+      restoring the already-lost deep history required a real re-run of
+      notebook 12 (`from_date=2015`, `force_refresh=True`), which was done:
+      ABBOTINDIA's raw data now spans 2015-01-01 to present (2,869 rows),
+      and `Total flips (closed)` across the universe now ranges 2-90
+      (median 56) instead of maxing out at 8.
+- [x] `score_for_pledged_trend_following()` added to `strategy_scoring.py` —
+      genuinely different from the other four scorers, not a copy with
+      renamed columns: those favor either price staying CONTAINED (credit
+      spreads/short IC — a premium-selling objective) or a defined-risk,
+      ATR-bounded options structure (debit spread/option buying). This
+      favors a large favorable move on the UP flips specifically, since
+      that's literally what buying the underlying and holding through the
+      trend is trying to capture. Built on a new `_add_pledged_up_flip_stats()`
+      helper that recomputes real per-symbol stats from CLOSED UP flips only
+      (not the blended UP+DOWN columns already in `PLEDGED_1D_COMPARISON.xlsx`
+      — a DOWN flip's pct_move describes a trade this strategy never takes).
+      Scores the FULL 154-symbol universe (not gated by `directly_fno_tradable`,
+      per the reframing above), Shares and ETFs ranked SEPARATELY (own
+      percentile scale each) since ETFs structurally have smaller typical
+      moves than individual stocks — blending them would make every ETF
+      look permanently worse for reasons unrelated to quality. Weights
+      `median_pct_move_up` highest, then `win_rate_up_pct`, then
+      `median_max_adverse_up` (penalized) — no candles-held/speed component,
+      since holding a share/ETF costs no theta, unlike the options
+      strategies. `min_flips=15` filters on UP-closed-flip count
+      specifically, same floor as everywhere else.
+- [x] **`gap_risk_threshold` recalibrated from the inherited 5.0% to 10.0%,
+      based on the real data, not a guess.** The 4H credit-spread scorer's
+      5% threshold, reused unchanged at first, flagged 94 of 96 ranked
+      instruments — nearly everyone, which defeats the point of a flag (it
+      should separate candidates, not fire universally). Checked the real
+      "Worst single gap (4yr)" distribution across all 140 processed
+      instruments: median 6.94%, mean 8.3%, with a clear break between the
+      80th percentile (~10%) and 85th (~13.1%). Set the threshold at that
+      80th-percentile boundary — now flags 21 of 96 (21.9%), a genuinely
+      discriminating minority. Makes sense that 5% was too tight here: it
+      was calibrated for the 4H strategies' faster-resolving trades; a 1D
+      position held for weeks-to-months will show at least one >5%
+      single-day move somewhere in a multi-year history without that being
+      unusual.
+- [x] **Real run against the restored deep data:** 96 ranked (83 Shares, 13
+      ETFs), 44 on the watchlist (below 15 UP-closed flips). Top shares by
+      score: AXISBANK, HDFCBANK, TITAN, BAJAJFINSV, LT, TATASTEEL, MARUTI,
+      BRITANNIA — median UP-flip moves 2.4-4.7%, win rates 58-68%. Top ETFs:
+      MAFANG, MON100, NV20BEES, PVTBANIETF, CONSUMBEES — stronger median
+      moves (2.3-7.7%) and higher win rates (60-84%) on a thinner per-
+      instrument sample. Saved to `exports/RANKING_pledged_trend_following.xlsx`
+      and `exports/WATCHLIST_pledged_trend_following.xlsx`. This directly
+      answers the original operational gap that motivated building it: when
+      several instruments flip UP the same day, the ranking — not a guess —
+      decides which to prioritize. It does NOT decide position sizing/how
+      many simultaneous candidates you can actually afford — that's a
+      capital-allocation decision this project deliberately doesn't make
+      for you, same boundary already established for the other four
+      strategies' rankings.
+
+- [x] **`pledged_trend_score` reweighted so the outlier-reliance flag actually
+      affects the score, not just labels it.** Real example that surfaced this:
+      BAJAJFINSV scored higher than TATASTEEL, but BAJAJFINSV's flagged
+      avg-median gap meant its headline average move was propped up by a
+      few outlier trades — the typical (median) outcome was actually worse
+      than TATASTEEL's. A flag sitting next to an inflated score is
+      misleading, not just cosmetic. Added `_score_consistency` (percentile
+      rank of `avg_pct_move_up - median_pct_move_up`, lower gap = better,
+      same skew_gap the flag is built from) as a real weighted component:
+      `pledged_trend_score = (median_move×4 + win_rate×3 + adverse×2 +
+      consistency×2) / 11` (previously `/9`, no consistency term). Re-verified
+      against real data post-fix (MON100 vs TATASTEEL): MON100 — 80.8% win
+      rate, 7.65% median UP move, 3.86% median adverse, no outlier flag,
+      scores 79.7. TATASTEEL — 65.8% win rate, 3.76% median move (its 9.68%
+      *average* was outlier-inflated, hence the flag), 4.44% median adverse,
+      scores 76.0. The score now correctly ranks the more consistent,
+      higher-quality trade above the outlier-flattered one.
+- [x] **Data-shrinkage regression recurred a second time after the first fix,
+      root cause still not fully pinned down — patched with a hard safety
+      guard instead of chasing it further.** After `process_instrument_incremental()`
+      was deployed and verified, ABBOTINDIA/BAJAJFINSV/LT still ended up back
+      down to ~272 rows (2025-07-02 to 2026-08-06) after several back-to-back
+      manual reruns of notebook 14's refresh cell in one session, while other
+      symbols (TITAN/SBIN/NESTLEIND) kept their full 2015-2026 history —
+      inconsistent, data-dependent, not a clean every-run failure (a leading
+      tz-related hypothesis was tested directly and disproven). Rather than
+      leave this able to silently destroy history again, added a guard to
+      `process_instrument_incremental()`: it now compares the merged result's
+      earliest date to the existing file's earliest date and **raises an
+      error instead of saving** if the merge would shrink history by more
+      than 5 days. Converts "silent data loss" into a loud, visible FAILED
+      row in the run log. Restored the 3 affected symbols via a full restart
+      + re-run of notebook 12; confirmed all back to 2015-2026 (2,869-2,870
+      rows) before trusting the ranking again. Practical takeaway: run
+      notebook 14's refresh once per session, not repeatedly back-to-back.
+
+### Stage 11 — Naked option buying (trailing stop, 1H) ✅
+- [x] `src/option_buying_trades.py` — NEW trade-lifecycle module, parallel to
+      `debit_spread_trades.py`, not a modification. Reuses the exact same
+      signal (`ema_adx_signal.py`, EMA 9/21 + rising-ADX, 1H) unchanged —
+      that part never modeled the spread structure, it only ever looked at
+      the underlying's price, so it applies identically here.
+- [x] **Exit logic is the deliberate difference from the debit spread
+      module**, not a copy of it: a debit spread's short leg structurally
+      caps the payoff, so a fixed 1.5R target matches that shape. Naked
+      buying has no such cap, and the entire point of skipping the hedge
+      leg is to keep the uncapped upside on a real trend run — a fixed
+      target would throw that away for a strategy that costs MORE (full
+      premium, no offsetting short leg reducing theta) for the SAME capped
+      return shape as the spread. So this module trails the stop instead:
+      same ATR-based initial stop as the debit spread version, but once the
+      trade has moved `trail_activate_r` (default 1.0) times the initial
+      stop distance in its favor, the stop starts trailing the best price
+      seen since entry by the same ATR distance, ratcheting one-way only.
+      Before trailing activates, the only exits are the initial stop or the
+      time exit — there is no fixed target to hit. Time exit (14 candles,
+      same default) is kept as a safety net regardless, since theta still
+      bleeds on a naked long option even before trailing kicks in.
+- [x] `src/option_buying_screener.py` — NEW live screener, parallel to
+      `debit_spread_screener.py`, same read-only-from-last-refresh design.
+      Same output shape requested: `candles_held`,
+      `candles_left_before_time_exit`, `current_pct_move`, `current_r`, plus
+      `current_stop_price`/`trailing_activated` in place of the spread
+      screener's fixed `target_price`.
+- [x] **Validated on the same 3 stocks used to build the debit spread
+      strategy (BHARTIARTL/RELIANCE/NIFTY, 1H)** — same entries as the
+      debit spread backtest by construction (shared signal), only the exit
+      differs. BHARTIARTL (32 trades): win rate 53.1% vs debit spread's
+      50%, avg R 0.22 vs 0.13 — and median R flipped from -0.45 (the debit
+      spread's known outlier-reliant result) to +0.06, meaningfully
+      reducing that outlier-reliance since bigger winners (2.15R, 2.92R
+      seen in this run) are no longer capped at 1.5R.
+- [x] `src/option_buying_scale_pipeline.py` — NEW batch runner, parallel to
+      `debit_spread_scale_pipeline.py`, same resume/failure-isolation/
+      rate-limit discipline, plus a `reprocess_all()` for recompute-only
+      refreshes off already-saved 1H data (shared raw files with the debit
+      spread pipeline, same interval).
+- [x] **Ran the full universe (214 instruments, same Nov 2024–Aug 2026
+      window and ≥15-closed-trades floor as debit spread) — PRE-4H-filter
+      numbers, superseded further down this stage once the hard filter was
+      added:** 189/214 qualified. 72.5% showed a positive avg_r_achieved (vs
+      debit spread's 70.1% after its own window extension). Mean avg R
+      0.126, median 0.100 — both higher than debit spread's mean 0.077. Std
+      0.224 (vs debit spread's tightened 0.140) — more variance across
+      instruments, which tracks: a trailing exit is more path-dependent
+      than a fixed target. On the 189 symbols common to both strategies,
+      option buying beat debit spread on avg_r for 61.9% of them — a real
+      edge on average, not uniform. On average 47.9% of entries ever reach
+      trail-activation; the rest resolve via the initial stop or the time
+      exit without ever getting the chance to trail.
+- [x] **Caveat carried over from the debit spread module, and weaker here,
+      not stronger:** this still only simulates the underlying's price move
+      as a proxy for real trade P&L. That proxy was already imperfect for a
+      spread; it's weaker for naked buying, since a naked long option has
+      full exposure to theta decay and IV changes with nothing offsetting
+      it (a spread's short leg absorbs part of both). Treat these R numbers
+      as a signal-quality filter, not an expected real return.
+- [x] **This full-universe run used a hand-rolled stand-in for `pandas_ta`
+      (exact same formulas — Wilder-smoothed ATR/ADX, standard EMA), not
+      the real library** — `pandas_ta` isn't installable in the sandbox
+      this was built in (Python version mismatch). The formulas match the
+      library's actual implementation, and the run was against real cached
+      1H price data (not synthetic), so the results should be representative
+      — but worth a from-source rerun via the real library in the normal
+      notebook environment before fully trusting the exact numbers, same
+      as any sandbox-computed result in this project.
+- [x] **`apply_4h_trend_filter()` — HARD FILTER added to `option_buying_trades.py`
+      after a tested finding.** Question was: does a 1H entry that agrees
+      with the symbol's own currently-active 4H Supertrend direction do
+      better than one that opposes it? Tested by joining every closed 1H
+      trade to the 4H flip that was open at its entry timestamp (reads the
+      same `exports/{symbol}_full_report.xlsx` every other strategy in this
+      project already produces — not a new signal, a filter on an existing
+      one). Across 12,608 real closed 1H trades (214 instruments) matched to
+      a 4H trend state: aligned entries won 53.3% vs 47.2% against, mean R
+      0.166 vs 0.024, and — the number that actually mattered — median R
+      flipped from +0.08 (aligned) to -0.46 (against). The typical
+      against-trend trade lost; the typical aligned trade didn't. Effect
+      size was large enough (especially the median flip) that it's unlikely
+      to be pure confounding, though it hasn't been checked instrument-by-
+      instrument, only pooled.
+- [x] Wired in as a **hard filter**, not a soft flag: `apply_4h_trend_filter()`
+      zeroes out any 1H signal whose direction disagrees with the 4H
+      direction active at that candle, called inside
+      `option_buying_scale_pipeline.process_instrument()` and
+      `reprocess_instrument()` right after `detect_signals()`, before
+      `simulate_trades()`. A signal with no matching 4H flip window (missing
+      4H history for that symbol/date) is dropped, not assumed aligned —
+      conservative by design. The surviving `four_h_direction` is recorded
+      in each trade row for audit, even though by construction every
+      surviving trade is aligned.
+- [x] **Rerun the full universe with the filter active:** roughly halved
+      signal frequency, as expected (an entry only survives if it agrees
+      with the 4H trend, and pre-filter alignment was close to 50/50).
+      153 instruments now qualify at >=15 closed trades (down from 189
+      pre-filter), but the survivors are meaningfully better: 70.6% positive
+      avg R (vs 72.5% pre-filter — comparable), mean avg R 0.198 (vs 0.126),
+      median 0.170 (vs 0.100), mean win rate 54.9% (vs 51.1%). Std widened
+      (0.327 vs 0.224) since each instrument now averages ~19 closed trades
+      instead of ~27+ — a thinner, noisier per-instrument sample, which is
+      exactly why the ranking below matters even more post-filter, not less.
+- [x] `score_for_option_buying()` added to `strategy_scoring.py` — same
+      weighting as `score_for_debit_spread` (median_r_achieved highest, same
+      `outlier_reliance_flag`), but **`min_trades=20`, not 30** — the 4H
+      filter's halved trade frequency means a 30-trade bar would leave
+      nothing ranked (post-filter max is 27 closed trades per instrument).
+      Rerun post-filter: 51 ranked, 102 on the watchlist (15-19 trades,
+      still real, just thinner). Saved to `exports/RANKING_option_buying.xlsx`
+      and `exports/WATCHLIST_option_buying.xlsx`.
+- [x] Notebooks `15_option_buying_scale_all.ipynb`,
+      `16_score_option_buying.ipynb`, `17_option_buying_live_screener.ipynb` —
+      same three-way split already used for debit spread (08/09/10).
+      Notebook 15 is written to do a **real, clean full refresh**
+      (`from_date=2023-01-01`, `force_refresh=True`, same window as debit
+      spread's notebook 08) rather than reuse the sandbox run's numbers
+      directly — the sandbox run pulled from whatever 1H history happened
+      to already be cached per symbol (some files still had the full
+      2023-2026 range, others had been shrunk to a few months by later
+      short-window live-refreshes), so it's a real but not perfectly
+      uniform comparison. Run notebook 15 for the authoritative version
+      once Kite access is available.
+
+- [x] **The pledged-securities data-shrinkage regression had an unfixed twin
+      in this pipeline too, found via a corrupted trades file.** Notebook
+      17's live-screener refresh cell called `process_instrument()` (full
+      replace) with a short 120-day lookback for whatever's in its top-20
+      shortlist — every run of notebook 17 was silently overwriting
+      notebook 15's deep 2023-2026 1H history for any shortlisted symbol
+      with just that 120-day window, same class of bug as
+      `pledged_1d_pipeline.py`'s, just never ported over here. Surfaced when
+      `ADANIENSOL_trades.csv` came back as a 1-byte empty file (`EmptyDataError`
+      in the screener) — the shrunk 120-day window barely had enough signals
+      to simulate, and `save_trades()` on an empty trades DataFrame writes a
+      near-blank file. Confirmed directly: ADANIENSOL/KPITTECH/BSE (that
+      day's shortlist) had collapsed from 6,194 rows (2023-2026) to 570 rows
+      (Apr-Aug 2026) right after notebook 15 had correctly saved them deep.
+      Fixed the same way as the pledged pipeline: added
+      `process_instrument_incremental()` to `option_buying_scale_pipeline.py`
+      (merges the quick catch-up window onto existing history instead of
+      replacing it, refuses to save if the merge would shrink history) and
+      switched notebook 17's refresh cell to use it instead of
+      `process_instrument()`. Any symbol shrunk before this fix needs a
+      re-run of notebook 15 to restore its deep history.
+
+- [x] **Same regression found and fixed a third time — this time it was the
+      original source.** A final audit (before closing out this round of
+      work) checked every other live-screener notebook for the same
+      pattern. Credit spreads (`06_daily_screener.ipynb`) and short iron
+      condor (`07_short_ic_shortlist.ipynb`) refetch a full deep window
+      every run too, which is wasteful but not destructive — no bug there.
+      But `10_debit_spread_live_screener.ipynb`'s refresh cell had the
+      identical bug: `process_instrument()` (full replace) called with a
+      120-day window for its shortlist. Its own earlier run is actually
+      what FIRST shrank ADANIENSOL/KPITTECH/BSE's shared 1H raw file (debit
+      spread and option buying read/write the same
+      `data/raw/{symbol}_60minute.csv`) — meaning notebook 10 introduced
+      the corruption that notebook 17 then re-triggered later. Fixed the
+      same way: added `process_instrument_incremental()` to
+      `debit_spread_scale_pipeline.py` and switched notebook 10 to use it.
+      All three live-screener pipelines that do a "refresh shortlist then
+      check" pattern (pledged-1D, option buying, debit spread) now merge
+      instead of replace, with the same shrink-guard in each.
+
 ## Notes / assumptions log
 
 - Last row per stock in flip exports is an open/ongoing trend, not a real breach —
@@ -228,6 +706,24 @@ existed (19 was never used) without causing issues.
   it leans toward mild momentum/continuation.** Do not treat an "aged" trend as a reason
   to enter against it or as a danger signal for entry — it can still be used to widen
   strike distance/reduce size as a conservative sizing choice, but not as a directional bet.
+
+- **Exhaustion test (tested, not assumed) — separate question from the one above:**
+  the reversion test above is about ENTRY (does an aged trend predict reversal?
+  no). This tested EXIT: once an already-open trend crosses its own median/75th/90th
+  percentile duration, is the ADDITIONAL time remaining tightly clustered enough to
+  use as a profit-booking signal? Tested across all 216 F&O instruments
+  (`src/exhaustion_test.py`), pooling excess as a ratio of each checkpoint (not raw
+  days — avoids mixing a 10-day-median stock with a 60-day-median stock and misreading
+  scale difference as scatter). Coefficient of variation (std/mean) came out ~1.0-1.03
+  at all three checkpoints, with no tightening deeper into the tail — even at the p90
+  checkpoint, 91.3% of crossings still needed up to double the p90 duration again
+  before actually ending. **Conclusion: no usable exit-side exhaustion signal exists at
+  any checkpoint — an honest negative result, not a signal forced where none is there.**
+  Keep managing exits by price action/manual judgment; do not build a live "exhaustion
+  warning" off pure duration data. (Also surfaced a real, separate bug while building
+  this: `reversion_test.py`'s duration parsing silently zeroes out its own per-stock
+  day columns on real exported data, though the ratio-based headline finding above is
+  unaffected — see Stage 8b.)
 
 - Screener output (`daily_screener.py`) only reflects data as of the last time a stock's
   raw data was actually refetched via the API (`process_stock`/`fetch_historical_data`).
@@ -274,6 +770,27 @@ existed (19 was never used) without causing issues.
   after the EMA cross, not exactly on it. Fixed by allowing confirmation up to
   `confirm_window` candles after the cross (still no lookahead — confirmation only
   looks at data up to the current candle). See Stage 9.
+
+- **1H entries that agree with the 4H trend beat ones that oppose it
+  (tested, not assumed) — now a hard filter in option_buying_trades.py:**
+  hypothesis was "does a naked-buying signal do better when it agrees with
+  the underlying's own 4H Supertrend direction at that moment?" Tested by
+  joining 12,608 real closed 1H trades (214 instruments, pre-filter run) to
+  the 4H flip that was active at each trade's entry timestamp. Aligned
+  trades: 53.3% win rate, mean R 0.166, median R +0.08. Against-trend
+  trades: 47.2% win rate, mean R 0.024, median R -0.46. The median flip is
+  the one that matters most (same median-over-mean standard as everywhere
+  else in this project) — the typical against-trend trade lost money, the
+  typical aligned trade didn't. Wired in as `apply_4h_trend_filter()`, a
+  hard filter (zeroes the signal, not a soft warning) applied before
+  `simulate_trades()`. Roughly halved trade frequency post-filter, as
+  expected (pre-filter alignment was close to 50/50), but the surviving
+  trades are meaningfully better across the board (see Stage 11 for the
+  full before/after numbers). Caveat: tested pooled across the universe,
+  not checked instrument-by-instrument — some confounding (certain stocks
+  simply trending persistently on both timeframes at once) is possible,
+  though the size of the median-R flip makes it unlikely to explain the
+  whole effect.
 
 - **Debit spread trade simulation is an underlying-price proxy, not an options
   P&L model:** `debit_spread_trades.py`'s pct_move/R-multiple describe the

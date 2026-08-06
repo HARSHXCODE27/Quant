@@ -54,6 +54,87 @@ def process_instrument(symbol, token, kite, from_date, to_date):
     summary["symbol"] = symbol
     return summary
 
+def process_instrument_incremental(symbol, token, kite, to_date,
+                                    deep_from_date=datetime(2023, 1, 1),
+                                    quick_lookback_days=120):
+    """
+    REGRESSION FIX - same class of bug found and fixed in
+    pledged_1d_pipeline.py and option_buying_scale_pipeline.py, discovered
+    here via the fact that this notebook's OWN earlier run is what first
+    shrank ADANIENSOL/KPITTECH/BSE's shared 1H raw file (debit spread and
+    option buying read/write the SAME data/raw/{symbol}_60minute.csv).
+    process_instrument() always does a full replace: fetches exactly
+    [from_date, to_date] and save_raw_data() overwrites the raw 1H CSV
+    wholesale. Notebook 10's live-screener refresh cell was calling
+    process_instrument() with a short 120-day lookback for whatever's in
+    its top-20 shortlist - silently replacing notebook 08's deep
+    2023-2026 history for any shortlisted symbol with just that 120-day
+    window every time the screener ran.
+
+    This function EXTENDS instead of replacing: if raw 1H data already
+    exists for the symbol, it only fetches the recent catch-up window
+    (quick_lookback_days), then merges onto the existing saved history
+    (dedup on date, sorted) before recomputing signal/lifecycle on the
+    FULL merged history. Only does a genuine deep fetch (deep_from_date)
+    the first time a symbol has no saved data at all. Same shrink-guard as
+    the other two fixes: refuses to save (raises) if the merge would end
+    up covering LESS history than what already existed.
+    """
+    try:
+        existing = load_raw_data(symbol, interval="60minute")
+    except FileNotFoundError:
+        existing = None
+
+    if existing is None or existing.empty:
+        fetch_from = deep_from_date
+    else:
+        last_saved = pd.Timestamp(existing.index.max())
+        if last_saved.tzinfo is not None:
+            last_saved = last_saved.tz_localize(None)
+        fetch_from = (last_saved - pd.Timedelta(days=quick_lookback_days)).to_pydatetime()
+
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval="60minute")
+    if new_df.empty:
+        raise ValueError("No data returned from fetch")
+
+    def _to_naive(series):
+        series = pd.to_datetime(series)
+        return series.dt.tz_localize(None) if series.dt.tz is not None else series
+
+    new_df["date"] = _to_naive(new_df["date"])
+
+    if existing is not None and not existing.empty:
+        existing_reset = existing.reset_index()
+        existing_reset["date"] = _to_naive(existing_reset["date"])
+        combined = pd.concat([existing_reset, new_df], ignore_index=True)
+        combined = combined.drop_duplicates(subset="date").sort_values("date").reset_index(drop=True)
+
+        existing_earliest = existing_reset["date"].min()
+        combined_earliest = combined["date"].min()
+        if pd.notna(existing_earliest) and combined_earliest > existing_earliest + pd.Timedelta(days=5):
+            raise ValueError(
+                f"{symbol}: incremental merge would SHRINK saved history "
+                f"(existing started {existing_earliest.date()}, merge result "
+                f"would start {combined_earliest.date()}) — refusing to save. "
+                f"Re-run notebook 08 (deep refresh) for this symbol instead."
+            )
+    else:
+        combined = new_df.sort_values("date").reset_index(drop=True)
+
+    save_raw_data(combined, symbol, interval="60minute")
+    combined_indexed = combined.set_index("date")
+
+    if len(combined_indexed) < 100:
+        raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+
+    df = detect_signals(combined_indexed)
+    trades = simulate_trades(df)
+    save_trades(trades, symbol)
+
+    summary = summarize_trades(trades)
+    summary["symbol"] = symbol
+    return summary
+
 def run_all_instruments(kite, token_lookup, symbol_list, from_date, to_date,
                          delay_seconds=0.4, force_refresh=False):
     os.makedirs(LOGS_DIR, exist_ok=True)

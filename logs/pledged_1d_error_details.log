@@ -1,0 +1,555 @@
+
+--- CMRGREEN at 2026-08-05 21:42:53.379786 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (40 candles)
+
+--- CORDELIA at 2026-08-05 21:42:56.298949 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (26 candles)
+
+--- KNACK at 2026-08-05 21:43:26.282613 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (21 candles)
+
+--- VAML at 2026-08-05 21:44:11.909667 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (37 candles)
+
+--- LIQUIDCASE at 2026-08-05 21:44:27.267550 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-05 22:27:14.063369 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (40 candles)
+
+--- CORDELIA at 2026-08-05 22:27:17.277733 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (26 candles)
+
+--- KNACK at 2026-08-05 22:27:48.665854 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (21 candles)
+
+--- VAML at 2026-08-05 22:28:39.467242 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (37 candles)
+
+--- LIQUIDCASE at 2026-08-05 22:28:56.861069 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-05 22:45:34.016145 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (40 candles)
+
+--- CORDELIA at 2026-08-05 22:45:37.243678 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (26 candles)
+
+--- KNACK at 2026-08-05 22:46:09.004965 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (21 candles)
+
+--- VAML at 2026-08-05 22:47:00.474352 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (37 candles)
+
+--- LIQUIDCASE at 2026-08-05 22:47:17.986872 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 10:16:13.413399 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 10:16:16.666641 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 10:16:48.167744 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 10:17:39.050903 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 10:17:56.486364 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 113, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 19:38:38.211059 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 19:38:52.226545 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 19:41:06.839121 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 19:44:44.678072 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 19:45:57.871477 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 20:18:52.529974 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 20:18:55.705543 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- CMRGREEN at 2026-08-06 20:20:03.977749 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 20:20:07.165507 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 20:20:38.268216 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 200, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- CMRGREEN at 2026-08-06 20:21:38.817205 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 20:21:46.823837 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 20:22:34.531649 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 20:23:51.216293 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 20:24:15.661877 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 160, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 20:25:02.747627 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 20:25:07.239208 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 20:25:50.519961 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 20:27:03.744795 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 20:27:28.428989 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 160, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 21:47:34.421491 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 219, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 21:47:48.195144 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 219, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 21:50:01.218620 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 219, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 21:53:38.280135 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 219, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 21:54:51.207720 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 219, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 21:59:35.458574 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    # would shrink, something upstream went wrong (existing wasn't
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 21:59:39.959392 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    # would shrink, something upstream went wrong (existing wasn't
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 22:00:25.404883 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    # would shrink, something upstream went wrong (existing wasn't
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 22:01:39.325558 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 155, in process_instrument_incremental
+    # would shrink, something upstream went wrong (existing wasn't
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 22:02:04.378643 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 198, in run_all_instruments
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 160, in process_instrument_incremental
+    if pd.notna(existing_earliest) and combined_earliest > existing_earliest + pd.Timedelta(days=5):
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-06 23:44:51.269688 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 217, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 174, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (41 candles)
+
+--- CORDELIA at 2026-08-06 23:44:55.875185 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 217, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 174, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (27 candles)
+
+--- KNACK at 2026-08-06 23:45:41.080644 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 217, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 174, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (22 candles)
+
+--- VAML at 2026-08-06 23:46:54.510839 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 217, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 174, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- LIQUIDCASE at 2026-08-06 23:47:19.704267 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 217, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 179, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values

@@ -29,7 +29,14 @@ def check_trend_status(symbol):
 
     median_dur = get_metric("Median duration (days)")
     p75_dur = get_metric("75th percentile duration (days)")
+    p90_dur = get_metric("90th percentile duration (days)")
 
+    # NOTE: past_median/past_75th_pct/past_90th_pct are descriptive only -
+    # how this trade's age compares to the stock's own history. Tested
+    # findings (reversion_test.py, exhaustion_test.py) show crossing these
+    # checkpoints does NOT predict an imminent reversal or give a reliable
+    # read on remaining time either way - don't read "True" here as a
+    # warning or an exit signal.
     return {
         "symbol": symbol,
         "direction": open_trade["direction"],
@@ -37,6 +44,7 @@ def check_trend_status(symbol):
         "median_duration": median_dur,
         "past_median": age_days > median_dur if median_dur else None,
         "past_75th_pct": age_days > p75_dur if p75_dur else None,
+        "past_90th_pct": age_days > p90_dur if p90_dur else None,
     }
 
 def screen_list(symbol_list):
