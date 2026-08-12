@@ -48,6 +48,19 @@ def compute_summary_stats(trades_df, monthly_df):
     add("Avg max_gap_against_pct", round(closed["max_gap_against_pct"].mean(), 2))
     add("Worst single gap (4yr)", round(closed["max_gap_against_pct"].max(), 2))
 
+    # Single-DAY move risk. The gap metrics above only see the overnight
+    # jump (open vs previous close), which turns out to miss most of what a
+    # bad day actually does — PIIND's 8.97% fall on 2026-08-12 was only a
+    # 1.28% gap, the rest intraday, so nothing in the scoring saw it. These
+    # measure the full close-to-close day. Guarded so summaries can still be
+    # built from reports generated before the column existed.
+    if "worst_day_against_pct" in closed.columns:
+        add("Avg worst_day_against_pct", round(closed["worst_day_against_pct"].mean(), 2))
+        add("Worst single-day move against (4yr)", round(closed["worst_day_against_pct"].max(), 2))
+        add("Flips with a day >4% against", int((closed["worst_day_against_pct"] > 4).sum()))
+    if "born_on_outlier_day" in closed.columns:
+        add("Flips born on an outlier day", int(closed["born_on_outlier_day"].fillna(False).sum()))
+
     add("Avg monthly range_pct", round(monthly_df["range_pct"].mean(), 2))
     add("Median monthly range_pct", round(monthly_df["range_pct"].median(), 2))
     add("Smallest monthly range_pct", round(monthly_df["range_pct"].min(), 2))

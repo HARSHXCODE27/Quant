@@ -185,6 +185,118 @@
       itself was deliberately left unmodified — out of scope for this session,
       flagged for a separate fix if wanted.
 
+### Stage 8c — Directional edge, single-day risk, and the go-to entry list ✅
+- [x] **Root problem found: `score_for_credit_spreads()` has no profitability term.**
+      All five components (median/worst adverse, worst gap, duration, % within a
+      monthly cycle) are risk-CONTAINMENT metrics, pooled across BOTH directions.
+      So a stock whose UP flips work and whose DOWN flips don't scores exactly like
+      one where both work, and the shortlist gave no way to tell them apart. LUPIN
+      scored 65.7 while its DOWN side won 33.3% of the time.
+- [x] `daily_screener.py` — `_directional_edge()` / `_edge_flag()` / `split_by_edge()`.
+      For the side that is actually OPEN: win rate, median move, containment at
+      5%/6%, worst adverse/gap/day, % within 30d, plus the OPPOSITE side for
+      contrast. Splits the screen into three buckets that need different action:
+  - **tradeable** — the open direction has historically worked
+  - **watchlist** — wrong half of a good stock; revisit on the flip, don't discard
+  - **no edge either side** — the signal has never worked in EITHER direction.
+    **This is the case the ranking is structurally blind to**: it scores only how
+    well-behaved price is, so KOTAKBANK/GRASIM/HINDUNILVR/ALKEM all scored well
+    (86-97% contained, gaps 2.5-3.3%) while being wrong both ways.
+  - Nothing is deleted — `no_edge` is returned and printed, same convention as
+    `gap_risk_flag`, so the exclusion stays auditable.
+- [x] **Containment is primary, win rate secondary — tested, and it matters.**
+      A credit spread is a "price won't breach my strike" bet, not a directional
+      one. Checked directly by measuring what FADING the signal would look like on
+      the 9 watchlist names: the faded direction wins more often (55-68% vs 33-45%)
+      but containment at 6% collapses from a mean of 86.7% to 71.4%, with faded
+      tail excursions of 19-25% (COLPAL: 100% contained following, 72.4% fading,
+      worst 22.74%). **Do not fade the signal with credit spreads** — it optimises
+      the metric that doesn't pay and wrecks the one that does. Whether fading
+      works as a DEBIT structure is untested and remains open.
+
+### Stage 8d — Single-day move risk (the gap metric's blind spot) ✅
+- [x] **Real gap found in production, not in theory.** PIIND was ranked #1 on a live
+      shortlist on 2026-08-12 and fell 8.97% that day — its second-worst day in four
+      years. `max_gap_against_pct` only measures the OPENING jump (open vs previous
+      close), which was just 1.28%; the other 7.79% happened intraday. A near-record
+      one-day collapse was invisible to every term in the scorer.
+- [x] `flip_analysis.py` — `add_daily_move_column()` plus three per-flip columns:
+      `worst_day_against_pct` (day-level analogue of the gap metric),
+      `entry_day_move_pct`, and `born_on_outlier_day` (|move| > 4%). Recorded per
+      flip rather than derived later, so "do crash-born flips behave differently?"
+      stays testable against history.
+- [x] `summary_stats.py` + `strategy_scoring.py` — `Worst single-day move against
+      (4yr)` scored at weight 2 alongside the other tail-risk terms (denominator
+      13 → 15), plus a `day_risk_flag` at >7%.
+- [x] **Universe-wide result:** median worst gap 5.39% vs median worst single day
+      7.60% — the gap metric was seeing less than half of real single-day risk.
+      **42 stocks pass the 5% gap filter but fail a 7% single-day filter.** Biggest
+      demotions: PRESTIGE rank 43→75 (gap 4.17%, day 13.21%), PIIND 11→29 (4.07% /
+      10.18%), TRENT 96→117 (4.78% / **19.34%**).
+- [x] **Live check, not just a historical stat.** `born_on_outlier_day` is surfaced
+      on the CURRENTLY OPEN flip and appended to `edge_flag`, because the
+      containment stats every strike distance is chosen from are drawn from
+      ORDINARY flips and do not describe a trend that began mid-crash.
+- [x] **Two bugs found and fixed while building this:**
+  - **numpy bool identity, twice.** `numpy.bool_(True) is True` is False, so
+    `is True` / `is False` checks against pandas-derived values silently never
+    fire. First occurrence left every stock unflagged; second left every
+    crash-born flip unwarned. Both now cast with `bool()`. Worth grepping for
+    this pattern elsewhere.
+  - **Flat denominator poisoned partial data.** The new score term used a single
+    weight for all rows, so any stock missing the metric scored `NaN` and vanished
+    from the ranking entirely — output still looked complete, just shorter. Now a
+    PER-ROW weight: a stock without the metric is scored on its remaining five
+    components and marked `scored_without_day_metric`.
+
+### Stage 8e — Market context and the single go-to entry list ✅
+- [x] `market_context.py` — the three things `daily_screener.py` could not answer
+      because it deliberately reads only `exports/`:
+  - `buffer_to_flip_pct` — distance from spot to the Supertrend level that would
+    invalidate the open trend. **The most decision-relevant number that was
+    missing**: NIFTY sat 0.27% away while topping the containment table, BANKNIFTY
+    1.26% and already underwater.
+  - `beta_vs_nifty` — so a 50/50 direction split is SHOCK-balanced, not merely
+    count-balanced. Three bear calls on defensive FMCG names do not offset three
+    bull puts on the index.
+  - `sector` — hand-maintained map; unlisted symbols return `UNKNOWN` and are
+    skipped by the cap rather than counted as a sector of their own. Closes the
+    concentration gap flagged as unbuilt in Stage 7.
+- [x] `entry_advisor.py` + `scripts/daily_list.py` — one list, balanced 50/50, with
+      a plain-language reason per name built from its own numbers. Filter chain:
+      no-edge → wrong-side → crash-born → thin buffer → underwater → sector cap →
+      50/50. Every excluded name is reported with the stage that removed it.
+- [x] **Sector cap is applied PER DIRECTION.** Concentration risk means positions
+      that LOSE TOGETHER — two bull puts in FMCG do, but a bull put on NESTLEIND
+      and a bear call on DABUR are opposite bets that partially offset. Capping
+      globally treated that hedge as concentration and silently cost the book its
+      balance (3 UP / 2 DOWN). Sides also fill by INTERLEAVING, scarcer side first;
+      filling UP completely first let it claim shared sectors and starve DOWN.
+- [x] **Directional supply is structurally asymmetric.** On 2026-08-12, across all
+      89 gap-clean names: 25 UP candidates vs 8 DOWN. DOWN quality falls off a
+      cliff after the fifth (setup_score 75.3 / 65.5 / 65.5 / 51.1 / 50.0, then
+      38.2 / 29.4 / 16.2). **10-a-side is not reachable**; forcing 8 pulls in
+      PRESTIGE at 71.4% containment and a 13.21% worst day. The script reports the
+      shortfall rather than quietly forcing in a weak bear call.
+- [x] **Exits deliberately NOT built.** `exhaustion_test.py` found no usable
+      duration-based exit signal, and profit-target / DTE rules are untested
+      against this data. Wiring them in would import folklore into a system
+      otherwise held to a tested standard. Exits stay manual.
+- [x] **Short iron condor on no-edge names — checked, positive, not built.**
+      "No directional edge either way" and "stays in a range" are close to the same
+      statement. The 6 no-edge names average an 87th-percentile `short_ic_score`
+      (HINDUNILVR 97th, RELIANCE 96th, GRASIM 92nd, KOTAKBANK 90th) vs 76th for
+      tradeable. **Not built, deliberately:** it addresses IC stock SELECTION, but
+      the open IC problem is entry TIMING (premium is rich at month-start but
+      unconfirmed; confirmation arrives once theta is spent). Edge classification is
+      a 4-year stock-level property and cannot move month to month, so it is
+      structurally incapable of being a timing signal. IV rank remains the answer.
+- [x] Notebook 06 restructured to 6 cells: column reference (markdown) → candidates
+      → API refresh → full screen → three buckets → **the final list**. Sort key is
+      printed above every table. `%autoreload 2` added so a stale kernel can never
+      run old module code — the failure that once rewrote 31 reports missing their
+      new columns.
+
 ### Stage 9 — Debit spread signal (EMA/ADX, 1H) — in progress
 - [x] `src/ema_adx_signal.py` — NEW module, parallel to `flip_analysis.py` not a
       modification of it. EMA(9/21) crossover + rising-ADX confirmation, built for
