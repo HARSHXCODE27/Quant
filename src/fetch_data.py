@@ -53,9 +53,66 @@ def fetch_historical_data(kite, instrument_token, from_date, to_date, interval="
     df.reset_index(drop=True, inplace=True)
     return df
 
-def save_raw_data(df, symbol, interval="4hour"):
+def save_raw_data(df, symbol, interval="4hour", allow_shrink=False):
+    """
+    SAFETY GUARD (added after the same silent-data-destruction pattern kept
+    recurring across different pipelines - most recently even AFTER a
+    per-pipeline incremental fix, when a stale Jupyter kernel ran an old,
+    unguarded code path that bypassed the fix entirely because it never
+    even called the new function). Every previous fix added the protection
+    to one specific "incremental" function per pipeline
+    (pledged_1d_pipeline.py, debit_spread_scale_pipeline.py,
+    option_buying_scale_pipeline.py, scale_pipeline.py) - which only helps
+    if that exact function is what actually runs. A stale kernel, an
+    un-restarted notebook, or any future pipeline that forgets to add its
+    own check can still call the OLD full-replace function and silently
+    destroy history, bypassing every guard built so far.
+
+    This function is the one place every pipeline actually calls to
+    persist raw price data - moving the guard here means it can't be
+    bypassed by which higher-level function happens to run. Before
+    overwriting an existing file, compares the new data's earliest date
+    against the existing file's earliest date. If the new data would cover
+    meaningfully LESS history (starts more than 5 days later than what's
+    already saved), refuses to save and raises instead of silently
+    destroying it - this is never a legitimate outcome in this project's
+    normal usage, since even a genuine deep refresh should cover at least
+    as much history as before, not less. Pass allow_shrink=True to
+    override deliberately (e.g. intentionally resetting a symbol).
+
+    A corrupted/unreadable existing file (e.g. the 1-byte ADANIENSOL_trades
+    incident, though that's a different file - same principle would apply
+    here to a corrupted raw CSV) is treated as "nothing to protect" rather
+    than blocking forever - the fresh save is let through, which naturally
+    self-heals the corruption instead of getting permanently stuck.
+    """
     os.makedirs(RAW_DATA_DIR, exist_ok=True)
     path = os.path.join(RAW_DATA_DIR, f"{symbol}_{interval}.csv")
+
+    if not allow_shrink and os.path.exists(path) and "date" in df.columns and not df.empty:
+        existing_earliest = None
+        try:
+            existing_first_row = pd.read_csv(path, usecols=["date"], nrows=1)
+            if not existing_first_row.empty:
+                existing_earliest = pd.to_datetime(existing_first_row["date"].iloc[0])
+                if existing_earliest.tzinfo is not None:
+                    existing_earliest = existing_earliest.tz_localize(None)
+        except Exception:
+            existing_earliest = None  # corrupted/unreadable - nothing to protect
+
+        if existing_earliest is not None:
+            new_earliest = pd.to_datetime(df["date"]).min()
+            if new_earliest.tzinfo is not None:
+                new_earliest = new_earliest.tz_localize(None)
+            if new_earliest > existing_earliest + pd.Timedelta(days=5):
+                raise ValueError(
+                    f"save_raw_data refusing to overwrite {symbol}_{interval}.csv: "
+                    f"existing data starts {existing_earliest.date()}, new data would "
+                    f"start {new_earliest.date()} - this would SHRINK saved history. "
+                    f"If a stale kernel is running old code, restart it and re-run. "
+                    f"If this is deliberate, call save_raw_data(..., allow_shrink=True)."
+                )
+
     df.to_csv(path, index=False)
     print(f"Saved {len(df)} candles to {path}")
     return path

@@ -22,3 +22,85 @@ Traceback (most recent call last):
     df["year_month"] = df.index.to_period("M")
                        ^^^^^^^^^^^^^^^^^^
 AttributeError: 'RangeIndex' object has no attribute 'to_period'. Did you mean: 'to_series'?
+
+--- BRITANNIA at 2026-08-07 10:09:31.563282 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 1450, in getresponse
+    response.begin()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/scale_pipeline.py", line 134, in run_all_stocks
+    process_stock(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/scale_pipeline.py", line 24, in process_stock
+    df = fetch_historical_data(kite, token, from_date, to_date, interval="4hour")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 683, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 912, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 967, in _request
+    raise e
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 955, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 742, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)

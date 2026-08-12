@@ -767,6 +767,31 @@ existed (19 was never used) without causing issues.
 
 ## Notes / assumptions log
 
+- **The data-shrinkage regression recurred a FOURTH time even after three separate
+  per-pipeline fixes - moved the guard to the shared save function instead.** Each
+  earlier fix (pledged-1D, debit spread, option buying) added an incremental
+  merge function with its own shrink-guard, but that only protects if that exact
+  function is what actually runs. It recurred again in option_buying's ADANIENSOL
+  (raw 1H data collapsed 6,194 → 574 rows) even with the fix in place and verified
+  correct on disk - root cause was almost certainly a stale Jupyter kernel running
+  an old cached version of the module that never called the new incremental
+  function at all, bypassing its guard entirely (same class of stale-kernel issue
+  already hit multiple times this session, e.g. the `process_instrument_incremental`
+  ImportError that needed a kernel restart to resolve). Rather than add a fourth
+  per-pipeline patch that has the same blind spot, moved the protection into
+  `fetch_data.py`'s `save_raw_data()` - the ONE function every pipeline
+  (scale_pipeline, debit_spread_scale_pipeline, option_buying_scale_pipeline,
+  pledged_1d_pipeline) actually calls to persist raw price data. Before
+  overwriting, it now compares the new data's earliest date against the existing
+  file's earliest date and refuses to save (raises) if the new data would start
+  more than 5 days later - impossible to bypass by calling an older function, an
+  un-restarted kernel, or any future pipeline that forgets its own check.
+  `allow_shrink=True` overrides deliberately if ever needed. A corrupted/
+  unreadable existing file is treated as nothing-to-protect (self-heals on the
+  next successful save, rather than blocking forever). Validated with 5 direct
+  file-based tests before trusting it: first save, legitimate extend, shrink
+  correctly blocked, override works, corrupted-file self-heal - all passed.
+
 - Last row per stock in flip exports is an open/ongoing trend, not a real breach —
   exclude when analyzing completed trades.
 

@@ -8,3 +8,6 @@ Project Notes.pages
 **/.DS_Store
 exports/
 config/access_token.txt
+
+# dated advisory output, regenerated twice daily
+reports/
