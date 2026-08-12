@@ -710,6 +710,54 @@ existed (19 was never used) without causing issues.
       rows) before trusting the ranking again. Practical takeaway: run
       notebook 14's refresh once per session, not repeatedly back-to-back.
 
+### Stage 10b — Directional edge on the pledged 1D universe ✅
+- [x] **The screener reported every flip with equal authority, and the universe
+      turns out to be badly asymmetric.** Measured across the 100 pledged
+      instruments with >=10 closed flips per side:
+
+      | Side | Mean win rate | Mean median move | % of instruments with an edge |
+      |---|---|---|---|
+      | UP   | 54.1% | **+0.9%** | **68%** |
+      | DOWN | 42.4% | **-1.3%** | **14%** |
+
+      The median DOWN flip ends with price HIGHER than where it flipped.
+      **27 of the 100 have no edge in EITHER direction.**
+- [x] **Why this matters here specifically.** A DOWN flip is what would prompt
+      action on a pledged holding (unpledge, reduce, worry) — and on this
+      universe that signal has historically worked on roughly one instrument in
+      seven. Of the 48 currently-open DOWN flips, **33 are on instruments where
+      the DOWN signal has never worked**; before this change all 48 read
+      identically. Mostly it would be selling dips in a long-drift equity
+      universe. The UP side is fine — which retrospectively validates notebook
+      18's `pledged_trend_score` being UP-only.
+- [x] `pledged_1d_screener.py` — ported the directional-edge work from Stage 8c
+      (`dir_flips` / `dir_win_rate` / `dir_median_move` / `signal_works_here`,
+      plus `opp_win_rate` / `opp_median_move` for contrast). `MIN_DIRECTIONAL_FLIPS`
+      is **10** here rather than the 4H screener's 12 — 1D flips are far rarer and
+      12 blanked out too many instruments.
+- [x] `buffer_to_flip_pct` + `moved_since_entry_pct` — how close price sits to the
+      Supertrend level that would reverse the trend. **The most actionable number
+      for a holder deciding whether to stay pledged, and it was not visible at
+      all** (SHREECEM currently sits 0.38% from invalidating). Reads the saved 1D
+      candles, so this module now touches `data/raw/` as well as `exports/`.
+- [x] `worst_day` / `entry_day_move` / `born_on_outlier_day` surfaced — these were
+      already being WRITTEN to the Flips sheet by the Stage 8d change to
+      `flip_analysis.py` (shared, unchanged) but never read back. Free to expose.
+      `runway_left_*` added for consistency with the 4H screener.
+- [x] **Tested and dropped: ETF whipsaw from tracking error.** `pledged_securities.py`'s
+      docstring says broad-index ETF flips "should really be read off the INDEX
+      itself, not the ETF", which implied thin ETFs would generate false flips.
+      Checked directly: **ETFs whipsaw on 1.8% of flips (duration <=5 days) versus
+      1.5% for equities** — no meaningful difference. BANKBEES and JUNIORBEES look
+      normal; NIF100BEES is mildly noisy at 8%, but so is DIVISLAB at 7.1%. The
+      documented concern is a non-issue in practice and needs no code change.
+- [x] Notebook 14 — column reference cell added at the top, and every table now
+      prints its sort key above itself.
+- [ ] **Open:** `pledged_trend_score` (notebook 18) still scores only the UP side,
+      so DOWN flips get no score at all and `signal_works_here` is the only thing
+      separating a meaningful DOWN flip from noise. Reasonable given the
+      asymmetry above, but worth revisiting if the DOWN side is ever traded.
+
 ### Stage 11 — Naked option buying (trailing stop, 1H) ✅
 - [x] `src/option_buying_trades.py` — NEW trade-lifecycle module, parallel to
       `debit_spread_trades.py`, not a modification. Reuses the exact same

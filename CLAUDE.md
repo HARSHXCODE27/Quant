@@ -17,7 +17,7 @@ why. Before proposing anything, check whether it was already tried:
 | The go-to entry list, market context | Stage 8e |
 | Short iron condor + its unsolved timing problem | Stage 6, 8e |
 | Debit spread (EMA/ADX) | Stage 9 |
-| Pledged 1D screener | Stage 10 |
+| Pledged 1D screener | Stages 10, 10b |
 | Naked option buying | Stage 11 |
 | Tested negatives, assumptions | "Notes / assumptions log" at the end |
 
@@ -36,6 +36,12 @@ findings. Several plausible ideas were built, tested, and thrown away.
   regression, not a feature.
 - **Say when something is unvalidated.** Everything in the screener is in-sample
   and descriptive. Label it that way.
+- **The signal does not work everywhere — check before acting on a flip.**
+  Both the 4H credit-spread screener and the pledged 1D screener now report
+  per-direction edge, because in both universes a large share of instruments
+  have no historical edge on the side that is currently open (pledged 1D: DOWN
+  flips show an edge on only 14% of instruments). A flip is not self-evidently
+  actionable. See Stages 8c and 10b.
 - **Negative results get written down.** If something is tested and fails, record
   it in the README so it isn't re-proposed later.
 - The user reads the final list and acts; they do not want to re-derive the
@@ -99,3 +105,7 @@ exports/   generated reports + RANKING_*.xlsx   (gitignored)
 - **Earnings / corporate actions** — no source in Kite Connect. Manual.
 - **Options liquidity** — deliberately manual, by the user's choice. Do not rank
   on it.
+- **Pledged 1D DOWN side** — `pledged_trend_score` (notebook 18) scores only the
+  UP side, so DOWN flips are unscored and `signal_works_here` is the only thing
+  separating a real DOWN flip from noise. Defensible given DOWN shows an edge on
+  just 14% of instruments, but revisit if that side is ever traded.
