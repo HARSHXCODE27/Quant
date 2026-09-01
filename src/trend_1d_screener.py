@@ -1,22 +1,36 @@
-# src/pledged_1d_screener.py
+# src/trend_1d_screener.py
 #
-# NEW live screener for the pledged-securities 1D universe, parallel to
-# daily_screener.py - reads exports/pledged_1d/ instead of the top-level
-# exports/ folder, and additionally reports security_type/etf_category/
-# directly_fno_tradable per symbol (from pledged_securities.py), since what
-# a flip means to DO about it differs by type - see
-# pledged_securities.load_pledged_universe()'s docstring for the full
-# reasoning. This screener only reports trend state - it does not decide
-# or recommend a trade.
+# RENAMED from pledged_1d_screener.py (see trend_universe.py and README
+# Stage 10) — live screener for the general F&O stock+index 1D
+# trend-following universe, parallel to daily_screener.py, reading
+# exports/trend_1d/ instead of the top-level exports/ folder. Used to also
+# report ETF category / pledgeability metadata specific to the old
+# pledged-securities universe; that's gone now that the
+# universe IS the F&O universe (every row is directly tradable by
+# construction, so a "directly_fno_tradable" column would never vary). Still
+# carries security_type ("Stock"/"Index") purely for display grouping — an
+# index isn't scored any differently, it just reads more naturally split out
+# in a live table. This screener only reports trend state - it does not
+# decide or recommend a trade.
+#
+# No stop-loss column here: src/stop_loss_test.py backtested fixed-%,
+# ATR-multiple, and worst-day-based candidate stop rules against the real
+# 1D flip history and found NONE beat holding to the natural DOWN-flip exit
+# - every rule's stopped-out flips averaged a POSITIVE actual outcome had
+# they been held, meaning a stop consistently cut short recoveries rather
+# than preventing bigger losses (consistent with reversion_test.py's
+# momentum/continuation finding). Exit is Supertrend DOWN-flip only, by
+# design, not by omission. buffer_to_flip_pct/moved_since_entry_pct below
+# remain the informational "how close/how underwater" numbers.
 
 import os
 import pandas as pd
 from datetime import datetime
 
-from src.pledged_securities import load_pledged_universe
+from src.trend_universe import load_trend_universe
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXPORTS_DIR = os.path.join(PROJECT_ROOT, "exports", "pledged_1d")
+EXPORTS_DIR = os.path.join(PROJECT_ROOT, "exports", "trend_1d")
 RAW_DIR = os.path.join(PROJECT_ROOT, "data", "raw")
 INTERVAL = "day"
 
@@ -29,19 +43,21 @@ def _directional_edge(flips, direction):
     Did the Supertrend signal actually WORK on this instrument, in the
     direction that is open right now?
 
-    Added because the pledged universe turns out to be badly asymmetric.
-    Measured across 100 instruments with enough history: UP flips win 54.1%
-    with a +0.9% mean median move and 68% of instruments show an edge, while
-    DOWN flips win 42.4% with a MINUS 1.3% mean median move and only 14% show
-    an edge. The median DOWN flip ends with price HIGHER than where it
-    flipped. 27 of the 100 have no edge in either direction.
+    Added because this universe turns out to be badly asymmetric (measured on
+    the original 154-symbol pledged-securities universe, before the Stage 10
+    repurposing to the full F&O universe — worth re-checking on the larger
+    universe once enough calendar time has passed). Measured across 100
+    instruments with enough history: UP flips win 54.1% with a +0.9% mean
+    median move and 68% of instruments show an edge, while DOWN flips win
+    42.4% with a MINUS 1.3% mean median move and only 14% show an edge. The
+    median DOWN flip ends with price HIGHER than where it flipped. 27 of the
+    100 have no edge in either direction.
 
-    That matters because of what a flip is used FOR here. A DOWN flip is what
-    would prompt action on a pledged holding (unpledge, reduce, worry), and on
-    this universe that signal has historically worked on about one instrument
-    in seven — the rest is mostly selling dips in a long-drift equity
-    universe. Without these columns the screener reports every flip with equal
-    authority.
+    That matters because this strategy only ever ENTERS on a UP flip — a
+    DOWN flip is purely an exit signal. On this universe that signal has
+    historically worked on about one instrument in seven, so a DOWN flip on
+    the other six is mostly noise, not a confirmed reversal. Without these
+    columns the screener reports every flip with equal authority.
 
     Descriptive and in-sample, same standing as past_median below: what the
     signal HAS done on this instrument, not what it will do.
@@ -80,10 +96,10 @@ def _current_vs_flip(symbol, open_trade):
     """
     Where price sits relative to the level that would reverse the open trend.
 
-    The single most actionable number for a holder deciding whether to stay
-    pledged — "0.3% from flipping" and "8% away" call for different behaviour,
-    and neither was visible before. Reads the saved 1D candles directly, which
-    is why this module now touches data/raw/ as well as exports/.
+    The single most actionable number here given there's no stop-loss —
+    "0.3% from flipping" and "8% away" call for different attention, and
+    neither was visible before. Reads the saved 1D candles directly, which
+    is why this module touches data/raw/ as well as exports/.
     """
     path = os.path.join(RAW_DIR, f"{symbol}_{INTERVAL}.csv")
     if not os.path.exists(path):
@@ -180,17 +196,15 @@ def check_trend_status(symbol, universe_df=None):
         match = universe_df[universe_df["symbol"] == symbol]
         if not match.empty:
             result["security_type"] = match["security_type"].values[0]
-            result["etf_category"] = match["etf_category"].values[0]
-            result["directly_fno_tradable"] = bool(match["directly_fno_tradable"].values[0])
 
     return result
 
 
 def screen_list(symbol_list):
     """
-    Same shape as daily_screener.screen_list - loads the pledged universe
-    once (not per-symbol) for the type/category/F&O-tradable columns.
+    Same shape as daily_screener.screen_list - loads the universe once (not
+    per-symbol) purely for the security_type ("Stock"/"Index") display column.
     """
-    universe_df = load_pledged_universe()
+    universe_df = load_trend_universe()
     results = [check_trend_status(s, universe_df=universe_df) for s in symbol_list]
     return pd.DataFrame([r for r in results if r is not None])

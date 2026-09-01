@@ -21,9 +21,9 @@ def fetch_historical_data(kite, instrument_token, from_date, to_date, interval="
     (no daily cap) - a 0.35s pause between chunks keeps any single multi-chunk
     fetch safely under that, regardless of how many chunks a wide from/to window
     needs. This didn't matter for the 4H/1H pipelines (short enough windows to
-    rarely need more than 1-2 chunks), but a long 1D lookback (e.g. the pledged-
-    securities screener's several-year windows) can need 5-10+ chunks for one
-    symbol, which hit `NetworkException: Too many requests` with no pacing here.
+    rarely need more than 1-2 chunks), but a long 1D lookback (e.g. the
+    trend-following screener's several-year windows) can need 5-10+ chunks for
+    one symbol, which hit `NetworkException: Too many requests` with no pacing here.
     """
     all_candles = []
     chunk_start = from_date
@@ -61,7 +61,7 @@ def save_raw_data(df, symbol, interval="4hour", allow_shrink=False):
     unguarded code path that bypassed the fix entirely because it never
     even called the new function). Every previous fix added the protection
     to one specific "incremental" function per pipeline
-    (pledged_1d_pipeline.py, debit_spread_scale_pipeline.py,
+    (trend_1d_pipeline.py, debit_spread_scale_pipeline.py,
     option_buying_scale_pipeline.py, scale_pipeline.py) - which only helps
     if that exact function is what actually runs. A stale kernel, an
     un-restarted notebook, or any future pipeline that forgets to add its

@@ -40,9 +40,9 @@ def process_stock_incremental(symbol, token, kite, to_date,
     """
     Efficiency fix for the daily credit-spread screener (notebook 06) - NOT
     a correctness bug like the ones found and fixed in the debit spread/
-    option buying/pledged pipelines. notebook 06's refresh cell already
+    option buying/trend-1D pipelines. notebook 06's refresh cell already
     used the SAME deep from_date=2022-01-01 window as the monthly full-scale
-    notebook 02, so it was never silently shrinking history - checked this
+    notebook 03, so it was never silently shrinking history - checked this
     directly before touching anything. But it WAS wasteful: every daily
     screener run re-downloads ~4 years of 4H data for its ~16-symbol
     shortlist instead of just catching up on what's missing since the last
@@ -84,7 +84,16 @@ def process_stock_incremental(symbol, token, kite, to_date,
         existing_reset = existing.reset_index()
         existing_reset["date"] = _to_naive(existing_reset["date"])
         combined = pd.concat([existing_reset, new_df], ignore_index=True)
-        combined = combined.drop_duplicates(subset="date").sort_values("date").reset_index(drop=True)
+        # keep="last" is load-bearing. existing data is concatenated FIRST, and
+        # drop_duplicates defaults to keep="first" — so the SAVED candle used to
+        # win over the freshly fetched one. Any candle saved while its 4H/1D
+        # window was still forming (i.e. any run during market hours) was frozen
+        # as a partial bar forever, because no later refresh could overwrite it.
+        # Real damage: ULTRACEMCO kept a flat 11815 bar on 29 shares of volume
+        # for 2026-08-11 13:15, and 29 of 48 refreshed symbols held candles at
+        # <10% of their normal volume — corrupt bars feeding Supertrend, so wrong
+        # flips, wrong trend ages and wrong signals. Fresh data must win.
+        combined = combined.drop_duplicates(subset="date", keep="last").sort_values("date").reset_index(drop=True)
 
         existing_earliest = existing_reset["date"].min()
         combined_earliest = combined["date"].min()
@@ -93,7 +102,7 @@ def process_stock_incremental(symbol, token, kite, to_date,
                 f"{symbol}: incremental merge would SHRINK saved history "
                 f"(existing started {existing_earliest.date()}, merge result "
                 f"would start {combined_earliest.date()}) — refusing to save. "
-                f"Re-run notebook 02 (deep refresh) for this symbol instead."
+                f"Re-run notebook 03 (deep refresh) for this symbol instead."
             )
     else:
         combined = new_df.sort_values("date").reset_index(drop=True)

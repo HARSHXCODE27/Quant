@@ -895,3 +895,735 @@ Traceback (most recent call last):
   File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
     raise AttributeError("Can only use .dt accessor with datetimelike values")
 AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-15 20:10:53.997305 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (47 candles)
+
+--- CORDELIA at 2026-08-15 20:10:59.667416 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (33 candles)
+
+--- KNACK at 2026-08-15 20:11:46.359336 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (28 candles)
+
+--- VAML at 2026-08-15 20:12:59.835532 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (44 candles)
+
+--- LIQUIDCASE at 2026-08-15 20:13:25.779972 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-15 20:27:08.055008 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (47 candles)
+
+--- CORDELIA at 2026-08-15 20:27:12.677894 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (33 candles)
+
+--- KNACK at 2026-08-15 20:27:58.886777 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (28 candles)
+
+--- VAML at 2026-08-15 20:29:12.838349 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (44 candles)
+
+--- LIQUIDCASE at 2026-08-15 20:29:38.815332 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-15 20:41:59.415108 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (47 candles)
+
+--- CORDELIA at 2026-08-15 20:42:03.974704 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (33 candles)
+
+--- KNACK at 2026-08-15 20:42:49.626378 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (28 candles)
+
+--- VAML at 2026-08-15 20:44:08.535172 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (44 candles)
+
+--- LIQUIDCASE at 2026-08-15 20:44:34.058324 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- BIKAJI at 2026-08-16 13:51:17.269488 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 1450, in getresponse
+    response.begin()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 133, in process_instrument_incremental
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval=INTERVAL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 683, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 912, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 967, in _request
+    raise e
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 955, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 742, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+--- BOSCHLTD at 2026-08-16 13:51:29.445158 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 1450, in getresponse
+    response.begin()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 133, in process_instrument_incremental
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval=INTERVAL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 683, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 912, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 967, in _request
+    raise e
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 955, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 742, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+--- CIPLA at 2026-08-16 13:51:51.432603 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 1450, in getresponse
+    response.begin()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 133, in process_instrument_incremental
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval=INTERVAL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 683, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 912, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 967, in _request
+    raise e
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 955, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 742, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+--- CMRGREEN at 2026-08-16 13:52:02.321517 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (47 candles)
+
+--- CORDELIA at 2026-08-16 13:52:08.713070 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (33 candles)
+
+--- KNACK at 2026-08-16 13:53:09.879636 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (28 candles)
+
+--- ORKLAINDIA at 2026-08-16 13:53:52.464314 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 1450, in getresponse
+    response.begin()
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 133, in process_instrument_incremental
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval=INTERVAL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 683, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 912, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 967, in _request
+    raise e
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 955, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 742, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.kite.trade', port=443): Read timed out. (read timeout=7)
+
+--- VAML at 2026-08-16 13:55:01.128216 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (44 candles)
+
+--- LIQUIDCASE at 2026-08-16 13:55:31.110101 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CMRGREEN at 2026-08-17 10:24:58.124428 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (48 candles)
+
+--- CORDELIA at 2026-08-17 10:25:02.789025 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (34 candles)
+
+--- KNACK at 2026-08-17 10:25:48.460239 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (29 candles)
+
+--- VAML at 2026-08-17 10:27:02.330811 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (45 candles)
+
+--- LIQUIDCASE at 2026-08-17 10:27:27.506623 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CORDELIA at 2026-08-23 14:00:10.911481 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 228, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- KNACK at 2026-08-23 14:02:39.807937 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 228, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (33 candles)
+
+--- VAML at 2026-08-23 14:06:23.577253 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 228, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 79, in process_instrument
+    raise ValueError(f"Insufficient data ({len(df)} candles)")
+ValueError: Insufficient data (49 candles)
+
+--- LIQUIDCASE at 2026-08-23 14:07:37.430364 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 228, in run_all_instruments
+    process_instrument(symbol, token, kite, from_date, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 87, in process_instrument
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CORDELIA at 2026-08-23 14:13:26.391426 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (38 candles)
+
+--- KNACK at 2026-08-23 14:14:13.008880 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (33 candles)
+
+--- VAML at 2026-08-23 14:15:29.493392 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (49 candles)
+
+--- LIQUIDCASE at 2026-08-23 14:15:55.905873 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Library/CloudStorage/OneDrive-Personal/1 Files/2_harsh/1_harsh_work/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- CORDELIA at 2026-09-01 12:32:34.954140 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (45 candles)
+
+--- KNACK at 2026-09-01 12:33:20.568022 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 183, in process_instrument_incremental
+    raise ValueError(f"Insufficient data ({len(combined_indexed)} candles)")
+ValueError: Insufficient data (40 candles)
+
+--- VAML at 2026-09-01 12:34:34.497861 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values
+
+--- LIQUIDCASE at 2026-09-01 12:34:59.683097 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 226, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/pledged_1d_pipeline.py", line 188, in process_instrument_incremental
+    summary = compute_summary_stats(trades, monthly)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/summary_stats.py", line 22, in compute_summary_stats
+    duration_days = closed["duration"].dt.total_seconds() / 86400
+                    ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/generic.py", line 6206, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/accessor.py", line 230, in __get__
+    return self._accessor(obj)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
+    raise AttributeError("Can only use .dt accessor with datetimelike values")
+AttributeError: Can only use .dt accessor with datetimelike values

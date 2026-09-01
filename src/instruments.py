@@ -40,3 +40,26 @@ def get_index_token(kite, tradingsymbol, exchange="NSE"):
     if match.empty:
         raise ValueError(f"Index '{tradingsymbol}' not found on {exchange}")
     return match.iloc[0]["instrument_token"]
+
+# The canonical 6-index universe used across this project's F&O strategies —
+# matches notebooks/03_scale_all_fno.ipynb's own indices list exactly.
+# tradingsymbol/exchange are what Kite's instrument dump actually uses, not
+# the short symbol name (e.g. NIFTY's tradingsymbol is "NIFTY 50", not
+# "NIFTY"). SENSEX trades on BSE; everything else is NSE. Centralized here
+# (rather than re-declared inline per notebook) since notebook 10/12's
+# trend-1D universe swap needs the same mapping notebook 03 already uses.
+INDEX_SYMBOLS = {
+    "NIFTY": ("NIFTY 50", "NSE"),
+    "BANKNIFTY": ("NIFTY BANK", "NSE"),
+    "SENSEX": ("SENSEX", "BSE"),
+    "NIFTYNXT50": ("NIFTY NEXT 50", "NSE"),
+    "MIDCPNIFTY": ("NIFTY MID SELECT", "NSE"),
+    "FINNIFTY": ("NIFTY FIN SERVICE", "NSE"),
+}
+
+def get_index_token_lookup(kite):
+    """symbol -> instrument_token for all 6 indices in INDEX_SYMBOLS."""
+    return {
+        symbol: get_index_token(kite, tradingsymbol, exchange)
+        for symbol, (tradingsymbol, exchange) in INDEX_SYMBOLS.items()
+    }

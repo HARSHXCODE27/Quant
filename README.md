@@ -89,7 +89,7 @@
     (not needed going forward). Long IC had found a real, unresolved liquidity limitation
     (top-ranked names were mostly small/mid-cap with poor OTM options liquidity —
     historically volatile ≠ tradeable) before it was dropped. Their notebooks
-    (`13_score_long_ic.ipynb`, `14_score_directional_buy.ipynb`), functions, and stale
+    (`11_score_long_ic.ipynb`, `12_score_directional_buy.ipynb`), functions, and stale
     ranking exports were deleted together — verified nothing else referenced them
     (credit spreads, short IC, and debit spread all read different ranking files and
     share only `_pct_rank`/`_add_trend_age_flag`/`_add_volatility_persistence_flag`/
@@ -115,7 +115,7 @@
       predict reversal. Three real gaps found, two fixed, one flagged as unbuilt:
   - **Screener refresh was inefficient, not destructive (checked directly, unlike the
     other three pipelines).** Notebook 06's refresh cell always used the SAME deep
-    `from_date=2022-01-01` window as notebook 02's monthly refresh - so unlike the debit
+    `from_date=2022-01-01` window as notebook 03's monthly refresh - so unlike the debit
     spread/option buying/pledged bugs, it was never silently shrinking history. It was
     wasteful though: re-fetching ~4 years of 4H data for a ~16-symbol shortlist on every
     daily run. Added `process_stock_incremental()` to `scale_pipeline.py` (same
@@ -150,7 +150,7 @@
 - [ ] Only revisit if manual checking becomes a proven, felt bottleneck after real trading
 
 ### Stage 8b — Exhaustion test (exit-side, credit spreads) ✅
-- [x] `src/exhaustion_test.py` + `notebooks/11_exhaustion_test.ipynb` — different
+- [x] `src/exhaustion_test.py` + `notebooks/07_exhaustion_test.ipynb` — different
       question from `reversion_test.py`. That test asks whether an aged trend
       predicts reversal AT ENTRY (no — momentum, ~13-15% longer). This asks,
       for an already-OPEN position: once a trend crosses its own median/75th/90th
@@ -396,11 +396,11 @@
       refresh already saved (`exports/debit_spread/{symbol}_trades.csv`) and
       checks for a currently-OPEN trade — a signal that fired recently and
       hasn't yet resolved (stop/target/time-exit). The refresh itself
-      happens in `notebooks/10_debit_spread_live_screener.ipynb`, reusing
+      happens in `notebooks/16_debit_spread_live_screener.ipynb`, reusing
       `debit_spread_scale_pipeline.process_instrument()` (no duplicate fetch
       code) with a short 120-day lookback — same two-speed cycle as the
-      existing screener: notebook 08's deep full-universe refresh keeps the
-      ranking honest (~monthly), notebook 10 only refreshes the shortlist
+      existing screener: notebook 14's deep full-universe refresh keeps the
+      ranking honest (~monthly), notebook 16 only refreshes the shortlist
       right before checking. Shortlist = top 15 from
       `RANKING_debit_spread.xlsx` with no `outlier_reliance_flag`, always
       including NIFTY/BANKNIFTY (same pattern as `06_daily_screener.ipynb`).
@@ -415,7 +415,7 @@ underlying-price-proxy limitation still applies — none of this models actual
 option premium/IV/theta, a manual options-chain check is still required per
 trade same as the other two remaining strategies.
 
-**First live run (notebook 10), confirmed working correctly:** of a 16-name
+**First live run (notebook 16), confirmed working correctly:** of a 16-name
 shortlist, exactly 1 (KPITTECH) had an active trade — consistent with the
 math (signal fires ~1-2x/month/instrument, trade holds ~5-8 candles, so any
 given stock has roughly a 5-7% chance of being mid-trade at a random moment;
@@ -423,7 +423,7 @@ given stock has roughly a 5-7% chance of being mid-trade at a random moment;
 target/current-R all checked out arithmetically against the raw price data.
 
 **Housekeeping (this session):** removed `score_for_long_iron_condor` and
-`score_for_directional_buying` (functions, notebooks 13/14, and their stale
+`score_for_directional_buying` (functions, notebooks 11/12, and their stale
 `RANKING_*.xlsx` exports) since those two strategies aren't being pursued —
 verified nothing else referenced them first. Also removed clearly-superseded
 single-stock build/validation notebooks whose logic is now fully reproduced
@@ -436,6 +436,13 @@ renumbered — nothing here references notebooks by number, and gaps already
 existed (19 was never used) without causing issues.
 
 ### Stage 10 — Pledged-securities 1D Supertrend screener ✅ (built, not yet run)
+
+> **REPURPOSED in Stage 10c below.** This section is kept as the accurate
+> engineering history of how the 1D Supertrend infrastructure was first
+> built and validated — it is NOT the current state. The universe, file
+> names, and several column names described here have since changed. See
+> Stage 10c for what's actually running today.
+
 - [x] New sub-project, separate from the F&O strategies above: a live Supertrend
       screener over the securities actually eligible for pledging as collateral
       (`data/Zerodha - Approved Securities.csv`, 8,265 rows), on the **1D**
@@ -600,7 +607,7 @@ existed (19 was never used) without causing issues.
       building the ranking below — `up_closed_count` (closed UP flips per
       symbol) maxed out at 8 across the whole universe, nowhere near the
       >=15 floor used everywhere else in this project. Root cause: notebook
-      14 was calling `run_all_instruments(..., force_refresh=True)` with a
+      12 was calling `run_all_instruments(..., force_refresh=True)` with a
       short 390-day window across the FULL 154-symbol universe on every
       routine run — and `process_instrument()`/`save_raw_data()` do a full
       REPLACE, not an update, so every live check was quietly throwing away
@@ -711,6 +718,12 @@ existed (19 was never used) without causing issues.
       notebook 14's refresh once per session, not repeatedly back-to-back.
 
 ### Stage 10b — Directional edge on the pledged 1D universe ✅
+
+> **Also superseded by Stage 10c** — the UP/DOWN edge split and its 54.1%/
+> 42.4% numbers below were measured on the 154-symbol pledged universe.
+> Kept as history; worth re-measuring on the full F&O universe once enough
+> calendar time has passed (flagged as an open item in Stage 10c).
+
 - [x] **The screener reported every flip with equal authority, and the universe
       turns out to be badly asymmetric.** Measured across the 100 pledged
       instruments with >=10 closed flips per side:
@@ -729,7 +742,7 @@ existed (19 was never used) without causing issues.
       the DOWN signal has never worked**; before this change all 48 read
       identically. Mostly it would be selling dips in a long-drift equity
       universe. The UP side is fine — which retrospectively validates notebook
-      18's `pledged_trend_score` being UP-only.
+      13's `pledged_trend_score` being UP-only.
 - [x] `pledged_1d_screener.py` — ported the directional-edge work from Stage 8c
       (`dir_flips` / `dir_win_rate` / `dir_median_move` / `signal_works_here`,
       plus `opp_win_rate` / `opp_median_move` for contrast). `MIN_DIRECTIONAL_FLIPS`
@@ -753,10 +766,103 @@ existed (19 was never used) without causing issues.
       documented concern is a non-issue in practice and needs no code change.
 - [x] Notebook 14 — column reference cell added at the top, and every table now
       prints its sort key above itself.
-- [ ] **Open:** `pledged_trend_score` (notebook 18) still scores only the UP side,
+- [ ] **Open:** `trend_score` (notebook 12) still scores only the UP side,
       so DOWN flips get no score at all and `signal_works_here` is the only thing
       separating a meaningful DOWN flip from noise. Reasonable given the
       asymmetry above, but worth revisiting if the DOWN side is ever traded.
+
+### Stage 10c — Repurposed to a general F&O trend-following screener ✅
+- [x] **The real intended use was never about pledging specifically** — Stage
+      10's own closing note already said so: buy the share on a fresh UP
+      flip, hold, exit on the opposite DOWN flip, literal cash-equity
+      ownership. Restricting the universe to the 154 pledgeable
+      shares/ETFs was an artifact of where the idea started, not a
+      requirement of the strategy. Repurposed the whole sub-project to scan
+      the full F&O universe instead — every file in this stage was renamed
+      to match (`pledged_securities.py` → `trend_universe.py`,
+      `pledged_1d_pipeline.py` → `trend_1d_pipeline.py`,
+      `pledged_1d_screener.py` → `trend_1d_screener.py`,
+      `pledged_1d_compare.py` → `trend_1d_compare.py`, notebooks 10–13
+      renamed to match, `exports/pledged_1d/` → `exports/trend_1d/`,
+      `pledged_trend_score` → `trend_score`, `score_for_pledged_trend_following()`
+      → `score_for_trend_following()`, `PLEDGED_1D_COMPARISON.xlsx` →
+      `TREND_1D_COMPARISON.xlsx`). Function signatures are unchanged; only
+      names changed to stop describing a use case this no longer is.
+- [x] **New universe**: `src.instruments.get_fno_stock_list()` (~211 stocks,
+      confirmed live) plus a new canonical 6-index mapping
+      (`src.instruments.INDEX_SYMBOLS` — NIFTY, BANKNIFTY, SENSEX,
+      NIFTYNXT50, MIDCPNIFTY, FINNIFTY, matching the same list
+      `03_scale_all_fno.ipynb` already uses) — **217 symbols total**, cached
+      to `config/trend_universe.csv` so read-only notebooks never need a
+      live Kite session. `get_fno_stock_list()` already returns 5 of those
+      6 indices as pseudo-stocks (index futures trade on NFO too; SENSEX
+      doesn't, its futures are on BFO) — stripped from the stock list and
+      re-added as proper `security_type="Index"` rows so nothing is
+      double-counted or mistyped.
+- [x] **Stop-loss tested before being added anywhere, per this project's own
+      standard — and rejected.** New `src/stop_loss_test.py` (same
+      methodology as `reversion_test.py`/`exhaustion_test.py`) backtested
+      three candidate rule families against every CLOSED UP flip in the 1D
+      history: fixed-% thresholds (5/8/10/12/15/18/20%), ATR-multiple
+      thresholds (1.5×/2×/2.5×, ATR recomputed from raw daily candles since
+      `apply_supertrend()` doesn't expose it), and a `worst_day_against_pct`-
+      based trigger (this project's own PIIND finding is that a single bad
+      day can matter more than the path getting there). **Every single rule
+      made outcomes worse, monotonically, as the threshold tightened** — at
+      25%+ no rule ever fired at all and results converged exactly back to
+      the no-SL baseline (3,104 pooled UP-closed flips: **mean +5.64%,
+      median +0.82%, 54.1% win rate** — matches Stage 10b's UP-side number
+      exactly, a good sign the new test computes the same thing correctly).
+      The reason: `mean_actual_pct_move_when_stopped` was POSITIVE for every
+      rule at every threshold (e.g. a flat 5% stop: flips that got stopped
+      out would have averaged **+2.32%** if held instead; an 8% worst-day
+      trigger: **+23.97%**). A stop-loss here doesn't cut losses short, it
+      cuts recoveries short — consistent with `reversion_test.py`'s
+      momentum/continuation finding, not reversion. **No stop-loss was
+      added.** Exit is the Supertrend DOWN flip only, by design, not by
+      omission — `buffer_to_flip_pct`/`moved_since_entry_pct` remain the
+      informational "how close/how underwater" numbers in the live screener.
+- [x] **Recalibration checked, not assumed, on the new universe**:
+      `gap_risk_threshold=10.0` (still flags 14.4% of the 216-instrument
+      universe, in the same "meaningful minority" range as the original
+      ~18% target) and `MIN_DIRECTIONAL_FLIPS=10` (median total closed
+      flips across the universe is 69, comfortably clearing the floor per
+      direction) — both re-verified against the real distribution, neither
+      needed changing.
+- [x] **Deep 1D history fetched for the full universe**: 216 of 217 symbols
+      succeeded (`process_instrument_incremental()`, unchanged — does a
+      genuine deep fetch from 2015 for any symbol with no saved data yet,
+      incremental catch-up for the rest, so the already-covered overlap
+      wasn't re-pulled from scratch). The one failure, `NIFTYFPI`, is a
+      niche FPI-focused index product with futures/options on NFO but no
+      plain NSE cash/index tradingsymbol to resolve — noted, not chased
+      further, same spirit as the handful of REIT/InvIT symbols Stage 10
+      already left uninvestigated.
+- [x] **Scorer and screener simplified along with the rename**: the
+      Shares-vs-ETF split in both `score_for_trend_following()` (two
+      separate percentile scales) and the live screener (separate Shares/
+      ETF tables) is gone — there are no ETFs in the universe anymore, and
+      an index doesn't need its own scoring scale the way a thin sector ETF
+      did. Both now rank/report as one unified table; `security_type`
+      (`"Stock"`/`"Index"`) is kept purely as a display/filter column.
+      Verified live: MIDCPNIFTY and FINNIFTY now rank naturally alongside
+      stocks (#5 and #8 by score in one post-rename run) instead of being
+      segregated.
+- [x] **Orphaned files removed**, since they stopped being reachable by any
+      code path the moment the universe changed: the original curated
+      workbook (`data/processed/Zerodha_Approved_Securities_Cleaned.xlsx`)
+      and its raw source (`data/Zerodha - Approved Securities.csv`), plus 79
+      per-symbol reports in `exports/trend_1d/` and 83 raw `_day.csv` files
+      in `data/raw/` for symbols that were only ever in the old pledged-only
+      universe (mostly ETFs — GOLDCASE, NIFTYBEES, BANKBEES, etc. — and a
+      handful of non-F&O shares). All gitignored/regenerable data, not
+      source of truth, per this project's own convention.
+- [ ] **Open, carried forward from Stage 10b**: the UP/DOWN edge asymmetry
+      (54.1%/68% vs 42.4%/14%) was measured on the old 154-symbol universe
+      and hasn't been re-checked on the full 217-symbol one yet — worth
+      doing once enough calendar time has passed on the newly-added
+      symbols' flip history. UP-only scoring remains the right default
+      until then.
 
 ### Stage 11 — Naked option buying (trailing stop, 1H) ✅
 - [x] `src/option_buying_trades.py` — NEW trade-lifecycle module, parallel to
@@ -871,25 +977,25 @@ existed (19 was never used) without causing issues.
       Rerun post-filter: 51 ranked, 102 on the watchlist (15-19 trades,
       still real, just thinner). Saved to `exports/RANKING_option_buying.xlsx`
       and `exports/WATCHLIST_option_buying.xlsx`.
-- [x] Notebooks `15_option_buying_scale_all.ipynb`,
-      `16_score_option_buying.ipynb`, `17_option_buying_live_screener.ipynb` —
+- [x] Notebooks `17_option_buying_scale_all.ipynb`,
+      `18_score_option_buying.ipynb`, `19_option_buying_live_screener.ipynb` —
       same three-way split already used for debit spread (08/09/10).
-      Notebook 15 is written to do a **real, clean full refresh**
+      Notebook 17 is written to do a **real, clean full refresh**
       (`from_date=2023-01-01`, `force_refresh=True`, same window as debit
-      spread's notebook 08) rather than reuse the sandbox run's numbers
+      spread's notebook 14) rather than reuse the sandbox run's numbers
       directly — the sandbox run pulled from whatever 1H history happened
       to already be cached per symbol (some files still had the full
       2023-2026 range, others had been shrunk to a few months by later
       short-window live-refreshes), so it's a real but not perfectly
-      uniform comparison. Run notebook 15 for the authoritative version
+      uniform comparison. Run notebook 17 for the authoritative version
       once Kite access is available.
 
 - [x] **The pledged-securities data-shrinkage regression had an unfixed twin
       in this pipeline too, found via a corrupted trades file.** Notebook
-      17's live-screener refresh cell called `process_instrument()` (full
+      19's live-screener refresh cell called `process_instrument()` (full
       replace) with a short 120-day lookback for whatever's in its top-20
-      shortlist — every run of notebook 17 was silently overwriting
-      notebook 15's deep 2023-2026 1H history for any shortlisted symbol
+      shortlist — every run of notebook 19 was silently overwriting
+      notebook 17's deep 2023-2026 1H history for any shortlisted symbol
       with just that 120-day window, same class of bug as
       `pledged_1d_pipeline.py`'s, just never ported over here. Surfaced when
       `ADANIENSOL_trades.csv` came back as a 1-byte empty file (`EmptyDataError`
@@ -897,30 +1003,30 @@ existed (19 was never used) without causing issues.
       to simulate, and `save_trades()` on an empty trades DataFrame writes a
       near-blank file. Confirmed directly: ADANIENSOL/KPITTECH/BSE (that
       day's shortlist) had collapsed from 6,194 rows (2023-2026) to 570 rows
-      (Apr-Aug 2026) right after notebook 15 had correctly saved them deep.
+      (Apr-Aug 2026) right after notebook 17 had correctly saved them deep.
       Fixed the same way as the pledged pipeline: added
       `process_instrument_incremental()` to `option_buying_scale_pipeline.py`
       (merges the quick catch-up window onto existing history instead of
       replacing it, refuses to save if the merge would shrink history) and
-      switched notebook 17's refresh cell to use it instead of
+      switched notebook 19's refresh cell to use it instead of
       `process_instrument()`. Any symbol shrunk before this fix needs a
-      re-run of notebook 15 to restore its deep history.
+      re-run of notebook 17 to restore its deep history.
 
 - [x] **Same regression found and fixed a third time — this time it was the
       original source.** A final audit (before closing out this round of
       work) checked every other live-screener notebook for the same
       pattern. Credit spreads (`06_daily_screener.ipynb`) and short iron
-      condor (`07_short_ic_shortlist.ipynb`) refetch a full deep window
+      condor (`09_short_ic_shortlist.ipynb`) refetch a full deep window
       every run too, which is wasteful but not destructive — no bug there.
-      But `10_debit_spread_live_screener.ipynb`'s refresh cell had the
+      But `16_debit_spread_live_screener.ipynb`'s refresh cell had the
       identical bug: `process_instrument()` (full replace) called with a
       120-day window for its shortlist. Its own earlier run is actually
       what FIRST shrank ADANIENSOL/KPITTECH/BSE's shared 1H raw file (debit
       spread and option buying read/write the same
-      `data/raw/{symbol}_60minute.csv`) — meaning notebook 10 introduced
-      the corruption that notebook 17 then re-triggered later. Fixed the
+      `data/raw/{symbol}_60minute.csv`) — meaning notebook 16 introduced
+      the corruption that notebook 19 then re-triggered later. Fixed the
       same way: added `process_instrument_incremental()` to
-      `debit_spread_scale_pipeline.py` and switched notebook 10 to use it.
+      `debit_spread_scale_pipeline.py` and switched notebook 16 to use it.
       All three live-screener pipelines that do a "refresh shortlist then
       check" pattern (pledged-1D, option buying, debit spread) now merge
       instead of replace, with the same shrink-guard in each.

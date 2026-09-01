@@ -17,7 +17,7 @@ why. Before proposing anything, check whether it was already tried:
 | The go-to entry list, market context | Stage 8e |
 | Short iron condor + its unsolved timing problem | Stage 6, 8e |
 | Debit spread (EMA/ADX) | Stage 9 |
-| Pledged 1D screener | Stages 10, 10b |
+| General F&O trend-following (1D, buy/hold/sell equity) | Stages 10, 10b, **10c** (current state) |
 | Naked option buying | Stage 11 |
 | Tested negatives, assumptions | "Notes / assumptions log" at the end |
 
@@ -37,11 +37,12 @@ findings. Several plausible ideas were built, tested, and thrown away.
 - **Say when something is unvalidated.** Everything in the screener is in-sample
   and descriptive. Label it that way.
 - **The signal does not work everywhere — check before acting on a flip.**
-  Both the 4H credit-spread screener and the pledged 1D screener now report
-  per-direction edge, because in both universes a large share of instruments
-  have no historical edge on the side that is currently open (pledged 1D: DOWN
-  flips show an edge on only 14% of instruments). A flip is not self-evidently
-  actionable. See Stages 8c and 10b.
+  Both the 4H credit-spread screener and the 1D trend-following screener now
+  report per-direction edge, because in both universes a large share of
+  instruments have no historical edge on the side that is currently open (1D
+  trend-following: DOWN flips showed an edge on only 14% of instruments on
+  the original 154-symbol universe). A flip is not self-evidently actionable.
+  See Stages 8c and 10b.
 - **Negative results get written down.** If something is tested and fails, record
   it in the README so it isn't re-proposed later.
 - The user reads the final list and acts; they do not want to re-derive the
@@ -55,9 +56,9 @@ findings. Several plausible ideas were built, tested, and thrown away.
   twice a day. Running more often reprints identical output.
 - **Each morning** — `python scripts/refresh_token.py`. Kite tokens expire
   overnight; this is the one unavoidable manual step.
-- **Monthly** — `notebooks/02_scale_all_fno.ipynb` (full refresh, all ~216
-  instruments) then `notebooks/04_score_credit_spreads.ipynb` (re-rank).
-  Notebook 03 is optional — 04 rebuilds the comparison table itself.
+- **Monthly** — `notebooks/03_scale_all_fno.ipynb` (full refresh, all ~216
+  instruments) then `notebooks/05_score_credit_spreads.ipynb` (re-rank).
+  Notebook 04 is optional — 05 rebuilds the comparison table itself.
 
 ## Traps that have actually bitten
 
@@ -85,8 +86,10 @@ src/       flip_analysis, supertrend, summary_stats, monthly_range  (core)
            daily_screener          directional edge + tradeable/watchlist/no_edge
            market_context          buffer-to-flip, beta, sector
            entry_advisor           the final balanced list
-notebooks/ 01-07 credit spread + short IC · 08-11 debit spread · 12-14 pledged
-           15-18 option buying · 50-52 exploration/tests
+notebooks/ 01 auth · 02 position monitor
+           03-07 credit spread (03/04 shared 4H build, 05-06 score+screen, 07 exhaustion test)
+           08-09 short IC · 10-13 general F&O trend-following (1D)
+           14-16 debit spread · 17-19 option buying · 20-22 exploration/tests
 scripts/   daily_list.py, refresh_token.py
 exports/   generated reports + RANKING_*.xlsx   (gitignored)
 ```
@@ -105,7 +108,14 @@ exports/   generated reports + RANKING_*.xlsx   (gitignored)
 - **Earnings / corporate actions** — no source in Kite Connect. Manual.
 - **Options liquidity** — deliberately manual, by the user's choice. Do not rank
   on it.
-- **Pledged 1D DOWN side** — `pledged_trend_score` (notebook 18) scores only the
+- **Trend-following DOWN side** — `trend_score` (notebook 12) scores only the
   UP side, so DOWN flips are unscored and `signal_works_here` is the only thing
-  separating a real DOWN flip from noise. Defensible given DOWN shows an edge on
-  just 14% of instruments, but revisit if that side is ever traded.
+  separating a real DOWN flip from noise. Defensible given DOWN showed an edge
+  on just 14% of instruments on the original 154-symbol universe (Stage 10b) —
+  not yet re-checked on the full F&O universe (Stage 10c) — but revisit if
+  that side is ever traded.
+- **1D trend-following stop-loss** — tested (Stage 10c, `src/stop_loss_test.py`)
+  and rejected: fixed-%, ATR-multiple, and worst-day-based candidate rules all
+  made outcomes worse than holding to the natural DOWN-flip exit. Do not
+  re-add one without a new test — this was a real, unambiguous negative
+  result, not an oversight.

@@ -59,15 +59,15 @@ def process_instrument_incremental(symbol, token, kite, to_date,
                                     quick_lookback_days=120):
     """
     REGRESSION FIX - same class of bug found and fixed in
-    pledged_1d_pipeline.py and option_buying_scale_pipeline.py, discovered
+    trend_1d_pipeline.py and option_buying_scale_pipeline.py, discovered
     here via the fact that this notebook's OWN earlier run is what first
     shrank ADANIENSOL/KPITTECH/BSE's shared 1H raw file (debit spread and
     option buying read/write the SAME data/raw/{symbol}_60minute.csv).
     process_instrument() always does a full replace: fetches exactly
     [from_date, to_date] and save_raw_data() overwrites the raw 1H CSV
-    wholesale. Notebook 10's live-screener refresh cell was calling
+    wholesale. Notebook 16's live-screener refresh cell was calling
     process_instrument() with a short 120-day lookback for whatever's in
-    its top-20 shortlist - silently replacing notebook 08's deep
+    its top-20 shortlist - silently replacing notebook 14's deep
     2023-2026 history for any shortlisted symbol with just that 120-day
     window every time the screener ran.
 
@@ -107,7 +107,16 @@ def process_instrument_incremental(symbol, token, kite, to_date,
         existing_reset = existing.reset_index()
         existing_reset["date"] = _to_naive(existing_reset["date"])
         combined = pd.concat([existing_reset, new_df], ignore_index=True)
-        combined = combined.drop_duplicates(subset="date").sort_values("date").reset_index(drop=True)
+        # keep="last" is load-bearing. existing data is concatenated FIRST, and
+        # drop_duplicates defaults to keep="first" — so the SAVED candle used to
+        # win over the freshly fetched one. Any candle saved while its 4H/1D
+        # window was still forming (i.e. any run during market hours) was frozen
+        # as a partial bar forever, because no later refresh could overwrite it.
+        # Real damage: ULTRACEMCO kept a flat 11815 bar on 29 shares of volume
+        # for 2026-08-11 13:15, and 29 of 48 refreshed symbols held candles at
+        # <10% of their normal volume — corrupt bars feeding Supertrend, so wrong
+        # flips, wrong trend ages and wrong signals. Fresh data must win.
+        combined = combined.drop_duplicates(subset="date", keep="last").sort_values("date").reset_index(drop=True)
 
         existing_earliest = existing_reset["date"].min()
         combined_earliest = combined["date"].min()
@@ -116,7 +125,7 @@ def process_instrument_incremental(symbol, token, kite, to_date,
                 f"{symbol}: incremental merge would SHRINK saved history "
                 f"(existing started {existing_earliest.date()}, merge result "
                 f"would start {combined_earliest.date()}) — refusing to save. "
-                f"Re-run notebook 08 (deep refresh) for this symbol instead."
+                f"Re-run notebook 14 (deep refresh) for this symbol instead."
             )
     else:
         combined = new_df.sort_values("date").reset_index(drop=True)
