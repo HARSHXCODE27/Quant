@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,ADANIPOWER,206.04,2026-09-29,21,205.0,6.65,4.36,0.2905,0.2656,0.2781

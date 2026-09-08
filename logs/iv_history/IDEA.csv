@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,IDEA,15.44,2026-09-29,21,15.0,0.92,0.38,0.4417,0.4098,0.4257

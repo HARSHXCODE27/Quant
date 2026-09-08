@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,SHRIRAMFIN,1027.0,2026-09-29,21,1020.0,33.8,20.7,0.2872,0.2634,0.2753

@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,HINDZINC,602.7,2026-09-29,21,600.0,19.55,14.65,0.2954,0.2961,0.2957

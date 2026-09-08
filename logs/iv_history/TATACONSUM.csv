@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,TATACONSUM,1013.7,2026-09-29,21,1010.0,22.95,15.9,0.1964,0.2008,0.1986

@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,MARICO,807.9,2026-09-29,21,810.0,15,12.25,0.1881,0.1645,0.1763

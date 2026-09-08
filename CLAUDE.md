@@ -11,14 +11,16 @@ why. Before proposing anything, check whether it was already tried:
 
 | Looking for | Read |
 |---|---|
-| Credit spread strategy, current state | Stages 6, 7, 8b–8e |
+| Credit spread strategy, current state | Stages 6, 7, 8b–8f |
 | Directional edge / no-edge detection | Stage 8c |
 | Single-day move risk, the PIIND incident | Stage 8d |
 | The go-to entry list, market context | Stage 8e |
+| IV rank gap: realized-vol proxy + forward IV recorder | Stage 8f |
 | Short iron condor + its unsolved timing problem | Stage 6, 8e |
 | Debit spread (EMA/ADX) | Stage 9 |
 | General F&O trend-following (1D, buy/hold/sell equity) | Stages 10, 10b, **10c** (current state) |
 | Naked option buying | Stage 11 |
+| Paper trading journal (debit spread + option buying, forward-only) | Stage 12 |
 | Tested negatives, assumptions | "Notes / assumptions log" at the end |
 
 Git history is also a real reference — commit messages carry the reasoning, not
@@ -59,6 +61,15 @@ findings. Several plausible ideas were built, tested, and thrown away.
 - **Monthly** — `notebooks/03_scale_all_fno.ipynb` (full refresh, all ~216
   instruments) then `notebooks/05_score_credit_spreads.ipynb` (re-rank).
   Notebook 04 is optional — 05 rebuilds the comparison table itself.
+- **Daily, once neither strategy is being traded live yet** —
+  `notebooks/23_paper_trading_journal.ipynb`. Refreshes the debit spread +
+  option buying shortlists and journals any trade whose signal fired on or
+  after paper-tracking's start date. Review after 1-2 months (win rate, avg
+  R, total R) before risking real capital on either strategy. See Stage 12.
+- **Daily, ~15:45 IST (after quotes settle)** — `python scripts/record_iv_snapshot.py`.
+  Records one ATM-IV row per F&O symbol to `logs/iv_history/{symbol}.csv`. Building
+  toward a real IV rank (~6 months to a usable percentile); safe to skip a day, but
+  every skipped day is a permanently missing data point. See Stage 8f.
 
 ## Traps that have actually bitten
 
@@ -84,24 +95,32 @@ findings. Several plausible ideas were built, tested, and thrown away.
 src/       flip_analysis, supertrend, summary_stats, monthly_range  (core)
            strategy_scoring        per-strategy rankings
            daily_screener          directional edge + tradeable/watchlist/no_edge
-           market_context          buffer-to-flip, beta, sector
+           market_context          buffer-to-flip, beta, sector, realized_vol_rank
            entry_advisor           the final balanced list
+           black_scholes           BS pricer + implied_vol solver
+           iv_recorder             daily forward ATM-IV snapshot (Stage 8f)
+           paper_trading           forward-only journal (Stage 12)
 notebooks/ 01 auth · 02 position monitor
            03-07 credit spread (03/04 shared 4H build, 05-06 score+screen, 07 exhaustion test)
            08-09 short IC · 10-13 general F&O trend-following (1D)
            14-16 debit spread · 17-19 option buying · 20-22 exploration/tests
-scripts/   daily_list.py, refresh_token.py
+           23 paper trading journal (debit spread + option buying, forward-only)
+scripts/   daily_list.py, refresh_token.py, record_iv_snapshot.py
 exports/   generated reports + RANKING_*.xlsx   (gitignored)
+logs/      run logs, paper_trading_journal.csv, iv_history/{symbol}.csv (tracked in git —
+           irreplaceable if lost, unlike exports/ and data/)
 ```
 
 ## Known open items
 
-- **IV rank — the main gap.** Nothing currently says whether the premium at a
-  chosen strike is worth taking. Cannot be backfilled: option tokens roll each
-  expiry and expired contracts leave Kite's instrument dump, so the historical IV
-  series does not exist on this side. The practical path is to start recording IV
-  forward now and have a usable percentile in ~6 months; realized-vol rank is a
-  backfillable interim proxy.
+- **IV rank — the main gap, now in progress (Stage 8f).** Nothing says whether the
+  premium at a chosen strike is worth taking. Cannot be backfilled: option tokens
+  roll each expiry and expired contracts leave Kite's instrument dump, so the
+  historical IV series does not exist on this side. `scripts/record_iv_snapshot.py`
+  started recording forward IV daily to `logs/iv_history/{symbol}.csv` — needs ~6
+  months before a percentile rank is usable, nothing reads it yet. In the meantime,
+  `market_context.realized_vol_rank()` (backfillable, live today) is the interim
+  proxy — shown in notebook 06's final list, informational only, no threshold set.
 - **Short IC entry timing** — still unsolved. Premium is rich at month-start but
   unconfirmed; confirmation arrives once theta is spent. Trend-freshness was tested
   as a fix (correlation 0.017 over 10,671 symbol-months) and rejected.

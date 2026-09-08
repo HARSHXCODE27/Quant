@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,NMDC,84.55,2026-09-29,21,85.0,2.06,1.93,0.2626,0.2301,0.2464

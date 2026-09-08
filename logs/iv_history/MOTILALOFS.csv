@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,MOTILALOFS,1043.6,2026-09-29,21,1040.0,34.85,27.7,0.3113,0.3146,0.313

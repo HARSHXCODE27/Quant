@@ -81,6 +81,9 @@
        like equity). This is the one signal that would genuinely answer "is premium rich
        or cheap right now" independent of price range - but it's a real multi-step build,
        tracked as its own future project, not a quick add-on.
+       **Started in Stage 8f** — forward IV recording is live; the historical series this
+       note describes as needing "reconstruction" still doesn't exist and can't (expired
+       contracts roll off), so the recorder builds a fresh one going forward instead.
     4. **Earnings-calendar exclusion (parked - no data source).** No corporate-actions/
        earnings-calendar endpoint exists in Kite Connect, and no reliable automated source
        is available in this environment. Stays a manual check (already logged below in the
@@ -296,6 +299,56 @@
       printed above every table. `%autoreload 2` added so a stale kernel can never
       run old module code — the failure that once rewrote 31 reports missing their
       new columns.
+
+### Stage 8f — IV rank gap: interim realized-vol proxy + forward IV recorder ✅
+- [x] **Why now:** asked directly whether Supertrend is the right/best metric for
+      credit spread selection. Conclusion (see chat, not re-derived here): Supertrend
+      itself barely matters — the per-stock edge validation (Stage 8c) and the
+      containment stats (computed from raw price history, not from Supertrend) are
+      what actually carry the strategy. The one gap Supertrend structurally can
+      never fill is whether the premium collected is worth the risk — this
+      project's own long-standing "main open item." Two pieces shipped, deliberately
+      different in kind: one usable today, one that needs months to become usable.
+- [x] `src/market_context.realized_vol_rank()` — backfillable, no new data needed:
+      `window`-day (default 20) annualized realized volatility (stdev of daily log
+      returns from the same 4H-derived daily closes `compute_beta` already uses),
+      then a percentile rank of TODAY's value against the stock's own trailing
+      ~2yr history of that same rolling series. **Not IV** — backward-looking, not
+      the market's forward price of risk — but answers a related question nothing
+      else here asks: is this stock more or less volatile than its own normal range
+      right now. Wired into `enrich()` (so it reaches notebook 06's final list and
+      `entry_advisor._reason()`'s plain-language WHY) and documented as a proxy with
+      **no established threshold** — informational only, not a filter, until it's
+      been tested the way every other metric here has been.
+- [x] `src/black_scholes.py` — plain Black-Scholes pricer + `implied_vol()` (scipy
+      `brentq` root-find on price − market_price = 0, static `r=6.5%`). Needed
+      because Kite Connect returns option `last_price` only, never IV. Verified by
+      round-tripping: fed a known sigma into `bs_price()`, solved `implied_vol()` on
+      the resulting price, recovered the same sigma to 4dp across 0.15-0.80 vol and
+      both CE/PE — before trusting it against a single real quote.
+- [x] `src/iv_recorder.py` + `scripts/record_iv_snapshot.py` — the actual forward
+      collection. Per symbol: nearest expiry with ≥7 DTE (skips expiries too close
+      to have stable time value), nearest strike **common to both CE and PE** (found
+      and fixed a real bug here — ULTRACEMCO's strike grid isn't symmetric; a CE
+      existed one strike closer to spot than any matching PE, so naive
+      nearest-to-spot-off-the-union picked a strike with no PE to quote), live
+      quote via `kite.quote()`, IV solved for both legs, averaged into `atm_iv`.
+      Appends one row/symbol/day to `logs/iv_history/{symbol}.csv` — **tracked in
+      git**, unlike `exports/`/`data/`, because this series is genuinely
+      irreplaceable if lost (unlike OHLC, a missed day's option quote can never be
+      re-fetched later) — same reasoning as the paper-trading journal (Stage 12).
+      Re-running same-day replaces that day's row rather than duplicating it.
+- [x] **Run against the live 217-symbol F&O universe the same day it was built:**
+      214/217 recorded. 3 genuine skips, not bugs: SENSEX (options trade on BFO, not
+      NFO — same distinction already noted elsewhere in this project), NIFTYFPI (no
+      plain NSE tradingsymbol — already a known gap, Stage 10c), and ULTRACEMCO
+      before the common-strike fix above.
+- [x] **Honest timeline, stated plainly:** `realized_vol_rank` is live in notebook 06
+      today. `atm_iv` needs ~6 months of accumulated daily rows before a percentile
+      rank against its own history means anything — until then `logs/iv_history/`
+      is just accumulating, nothing reads it yet. Run `scripts/record_iv_snapshot.py`
+      once daily (~15:45 IST, after quotes settle — same reasoning as Stage 12's
+      paper-trading run time) to keep it building.
 
 ### Stage 9 — Debit spread signal (EMA/ADX, 1H) — in progress
 - [x] `src/ema_adx_signal.py` — NEW module, parallel to `flip_analysis.py` not a
@@ -1030,6 +1083,42 @@ existed (19 was never used) without causing issues.
       All three live-screener pipelines that do a "refresh shortlist then
       check" pattern (pledged-1D, option buying, debit spread) now merge
       instead of replace, with the same shrink-guard in each.
+
+### Stage 12 — Paper trading journal (debit spread + option buying, forward-only) ✅
+- [x] **Why:** both strategies are fully backtested (Stages 9/11) but neither has
+      been traded with real money. The backtests are in-sample; what hasn't been
+      checked is whether the same signal keeps producing a similar outcome
+      distribution going forward, on trades nobody hand-picked with hindsight —
+      the natural next check before allocating real capital, same evidence
+      standard as everything else here.
+- [x] `src/paper_trading.py` — NEW module, deliberately thin: adds no new entry
+      or exit rule. `{symbol}_trades.csv` already contains the FULL trade
+      history recomputed from scratch on every refresh (`process_instrument_
+      incremental()`, same as notebooks 16/19 already do), going back to 2023.
+      `build_journal()` just filters each shortlisted symbol's trades file down
+      to rows whose `entry_date` is on or after a fixed start date, tags them
+      with `strategy`/`symbol`, and concatenates — the forward-only slice IS the
+      paper-trading journal, nothing needed to be simulated separately.
+- [x] **Start date is fixed once, not re-derived.** `get_start_date()` writes the
+      first-call date to `config/paper_trading_start.json` (one entry per
+      strategy) and reads it back unchanged after — so re-running the notebook
+      daily can never silently move what counts as "forward" versus backtest.
+- [x] `notebooks/23_paper_trading_journal.ipynb` — refreshes the same
+      outlier-reliance-clean top-20 (+NIFTY/BANKNIFTY) shortlist notebooks 16/19
+      already use, via the same incremental fetch, then builds and saves the
+      combined journal to `logs/paper_trading_journal.csv` (tracked in git,
+      unlike `exports/`/`data/`, so the track record survives and is reviewable
+      over time) plus a per-strategy/per-status summary (win rate, avg/median R,
+      total R) — OPEN trades' R is a live unrealized snapshot, CLOSED trades' R
+      is resolved; kept in separate summary rows so one never contaminates the
+      other's average.
+- [x] **Still entirely paper.** Places no orders; only journals what each
+      strategy's already-tested rules would have done. Review after the
+      shortlists have generated enough closed trades (this project's own
+      ≥15–30-flip minimums elsewhere are the rough bar) before deciding whether
+      to trade either strategy with real capital, and before changing anything
+      about either strategy based on the result — same tested-not-assumed
+      standard, applied to itself.
 
 ## Notes / assumptions log
 

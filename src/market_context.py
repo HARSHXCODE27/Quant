@@ -13,6 +13,11 @@
 #      three bull puts on the index; equal counts, very unequal crash response.
 #   3. sector              - the concentration limit the README flags as a real
 #      unbuilt gap (ICICIPRULI + HDFCBANK + BANKNIFTY once shared a top-15).
+#   4. realized_vol_rank   - backfillable interim proxy for the IV rank gap
+#      (see README's "main gap" and Stage 8f) - is this stock more or less
+#      volatile than its OWN normal range right now. Not IV, but the closest
+#      thing available from price history alone; see realized_vol_rank()'s
+#      own docstring for the real forward-collected IV recorder.
 #
 # All of it comes from data already on disk. No API calls.
 
@@ -26,6 +31,10 @@ EXPORTS_DIR = os.path.join(PROJECT_ROOT, "exports")
 
 BETA_LOOKBACK_DAYS = 250   # ~1 trading year
 BETA_MIN_OBSERVATIONS = 60
+
+REALIZED_VOL_WINDOW = 20        # ~1 trading month
+REALIZED_VOL_LOOKBACK_DAYS = 500  # ~2 years, the percentile base
+REALIZED_VOL_MIN_HISTORY = 120  # need a real distribution before a rank means anything
 
 # Static sector map. Public classification, maintained by hand — a symbol not
 # listed here comes back as "UNKNOWN" and is skipped by the concentration check
@@ -180,15 +189,49 @@ def current_position_vs_flip(symbol):
     }
 
 
+def realized_vol_rank(symbol, window=REALIZED_VOL_WINDOW, lookback_days=REALIZED_VOL_LOOKBACK_DAYS):
+    """
+    Backfillable interim proxy for the IV rank gap (README's "main gap" - no
+    options pricing data exists here to compute a real IV rank; see
+    src/iv_recorder.py for the forward-collection half of that). Realized
+    vol is backward-looking, not the market's forward price of risk, but it
+    answers a related practical question nothing else in this project asks:
+    is this stock more or less volatile than its OWN normal range right now
+    - relevant to whether a strike distance that looked safe over the 4yr
+    containment history still is.
+
+    `window`-day annualized realized volatility (stdev of daily log returns
+    x sqrt(252)), then a percentile rank of TODAY's value against this
+    stock's own trailing `lookback_days` history of that same rolling
+    series. Returns None if there isn't enough daily-close history for a
+    real distribution to rank against - never a rank computed off a handful
+    of points.
+    """
+    closes = _daily_closes(symbol)
+    if closes is None or len(closes) < REALIZED_VOL_MIN_HISTORY:
+        return None
+
+    log_returns = np.log(closes / closes.shift(1)).dropna()
+    rolling_vol = (log_returns.rolling(window).std() * np.sqrt(252) * 100).dropna()
+    history = rolling_vol.tail(lookback_days)
+    if len(history) < REALIZED_VOL_MIN_HISTORY:
+        return None
+
+    current = float(history.iloc[-1])
+    rank = float((history <= current).mean() * 100)
+    return {"realized_vol_pct": round(current, 1), "realized_vol_rank": round(rank, 1)}
+
+
 def get_sector(symbol):
     return SECTOR_MAP.get(symbol, "UNKNOWN")
 
 
 def enrich(status):
     """
-    Adds spot, flip_level, buffer_to_flip_pct, moved_since_entry_pct, beta and
-    sector to a screen_list() frame. Missing values stay None rather than being
-    imputed — an absent number is visible, a guessed one is not.
+    Adds spot, flip_level, buffer_to_flip_pct, moved_since_entry_pct, beta,
+    sector, and realized_vol_pct/realized_vol_rank to a screen_list() frame.
+    Missing values stay None rather than being imputed — an absent number is
+    visible, a guessed one is not.
     """
     df = status.copy()
     rows = []
@@ -197,6 +240,9 @@ def enrich(status):
         ctx["symbol"] = symbol
         ctx["beta"] = compute_beta(symbol)
         ctx["sector"] = get_sector(symbol)
+        vol = realized_vol_rank(symbol)
+        ctx["realized_vol_pct"] = vol["realized_vol_pct"] if vol else None
+        ctx["realized_vol_rank"] = vol["realized_vol_rank"] if vol else None
         rows.append(ctx)
     ctx_df = pd.DataFrame(rows)
     return df.merge(ctx_df, on="symbol", how="left")

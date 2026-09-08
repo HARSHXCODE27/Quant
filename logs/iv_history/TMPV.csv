@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-09-08,TMPV,304.9,2026-09-29,21,305.0,7.5,6.6,0.2393,0.244,0.2417

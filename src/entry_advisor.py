@@ -66,6 +66,13 @@ def _reason(row):
         bits.append(f"Trend is {state} ({row['moved_since_entry_pct']:+.2f}% since flip).")
     if pd.notna(row.get("beta")):
         bits.append(f"Beta {row['beta']}.")
+    if pd.notna(row.get("realized_vol_rank")):
+        vol_read = ("elevated" if row["realized_vol_rank"] >= 70
+                     else "compressed" if row["realized_vol_rank"] <= 30
+                     else "in its normal range")
+        bits.append(f"Realized vol {row['realized_vol_pct']}% (annualized), "
+                     f"{vol_read} vs its own 2yr history ({row['realized_vol_rank']}th pct — "
+                     f"proxy only, not IV, no established threshold yet).")
     return " ".join(bits)
 
 
