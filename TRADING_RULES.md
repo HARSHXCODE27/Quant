@@ -32,6 +32,7 @@ and the exit is worse than entry. The strike plays no part.
 | Indicator | **Supertrend 10,3** | ST 10,2 / 10,4 / 7,3 / 14,3, EMA 9/21 & 20/50, MACD, PSAR, DMI, Donchian, EMA200 filter | 8g |
 | ADX filter | ADX > 20 helps **stocks only** | "ADX rising", "DI agrees" (failed holdout); on indices ADX raised strike hits | 8g, 8i |
 | Instrument | **Indices (NIFTY, BANKNIFTY)**; gold equal to NIFTY and a diversifier | NIFTY 50 stocks (losses 2× bigger, book lost money at realistic premiums), other F&O stocks, SENSEX (negative in model) | 8i, 8l, 8n, 8p |
+| Diversify into stocks? | **No: index only.** Same ₹10L book, same rules, 2022-26: **index only +₹68,310, worst drawdown −₹34,187, losing months 34%** vs **index + NIFTY 50 stocks −₹2,28,258, drawdown −₹2,81,117, losing months 69%** (at live-calibrated stock premiums; stocks only win if their options were ~25% richer than the model, and live quotes say ~19% cheaper). Without option prices: stocks win ~2.5 pts more often but each loss is **2.1× bigger** (−3.7% vs −1.7%), and losses over 3% are **5× as common** (29% vs 5% of trades), every year | Mixing stocks into the index book | 8n |
 | Structure | **Directional credit spread** | 7% iron condor (earns ~0 after skew), VIX/ADX regime switch, plain monthly put spread (half the profit, 2× the drawdown) | 8m, 8q |
 | Strike | **~3%** | 2% (bigger losses), 4-5% (costs eat the credit), "1.5% return on margin" (landed ~5%) | 8l |
 | Exit | **Hold to the flip or expiry** | Profit-take at 25 / 50 / 75%; stop order at the line (untested, see Pending) | 8q |
