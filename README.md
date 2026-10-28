@@ -350,6 +350,268 @@
       once daily (~15:45 IST, after quotes settle — same reasoning as Stage 12's
       paper-trading run time) to keep it building.
 
+### Stage 8g — Lower timeframes and other indicators vs 4H Supertrend (tested) ✅
+- [x] `src/timeframe_indicator_test.py` — 13 signal systems × 1H / 2H / 4H / 1D on
+      the screener universe (top 50 gap-clean + NIFTY/BANKNIFTY, 49 with 1H data),
+      Jan 2023 – Oct 2026, ~388k simulated trades. Every system uses the paper
+      journal's trade rules (Stage 12b): enter on signal change, 6% OTM short
+      strike, exit on reverse signal (SL) or current-month expiry, re-enter after
+      expiry if the signal still holds. All candles built from the same 1H source
+      (resampled 4H matches the native 4H file to 0.013%; 65/66 production flips
+      reproduced). Systems: Supertrend 10,3 / 10,2 / 10,4 / 7,3 / 14,3, EMA 9/21
+      and 20/50 cross, MACD 12,26,9, Parabolic SAR, DMI +DI/-DI 14, Donchian 20,
+      and Supertrend 10,3 with an EMA200 or ADX>20 entry filter.
+- [x] **Win/loss = the user's rule**: an SL exit wins only if it closed beyond entry
+      in the trade's favour; an expiry wins unless it closed beyond the strike.
+      A secondary Black-Scholes P&L (sigma = trailing 20d realized vol, held flat)
+      ranks systems only — it has no volatility risk premium, so its absolute
+      level is negative by construction and means nothing on its own.
+- [x] **Lower timeframes do NOT beat 4H — clear negative.** Supertrend 10,3 win rate:
+      4H 52.2%, 2H 47.5%, 1H 42.0% (pooled). 1H is worse on 100% of instruments, 2H
+      on 86%, and both are worse in every year 2023-2026. Losses are smaller (1H
+      −1.8%, 2H −2.8% vs 4H −3.4%) and the strike is reached less often, but at
+      2–5× the trades (4.6/month per instrument on 1H vs 2.0), median holds of 5–9
+      days vs 13 (much less time decay collected), and 80%+ of exits are stop-outs.
+      Same pattern for every indicator: faster = lower win rate, more trades.
+- [x] **Fast indicators on 4H are worse** — Parabolic SAR, MACD, DMI, EMA 9/21 all
+      trade 1.3–2.2× as often with lower win rates (36.7–46.0%).
+- [x] **Higher win rate is mostly bought with wider stops — not an improvement.**
+      Supertrend 10,4 (58.5%) and EMA 20/50 (57.0%) on 4H, and every 1D system
+      (64–71%), win more often only because the stop sits further away: losses
+      grow (−3.9 to −5.7%) and the 6% strike is reached far more often (4H ST 10,4
+      15.0%, EMA 20/50 14.4%, 1D 20–24%, vs 9.1% baseline). On the 2022 holdout
+      EMA 20/50 also lost its win-rate edge (58.1% vs 59.7%).
+- [x] **The one candidate: 4H Supertrend 10,3 + ADX(14) > 20 entry filter** (exit
+      unchanged — the Supertrend flip). In-sample: 56.5% vs 52.2% win rate, better
+      on 80% of instruments, better in every year (2023 58.6/55.8, 2024 54.7/50.9,
+      2025 52.7/50.0, 2026 61.5/52.8), strike-reached 10.1% vs 9.1%. The flips it
+      skips won only 48.5%. Halves trade count (~1/month per instrument). **2022
+      holdout** (native 4H, never used above): 63.8% vs 59.7%, better on 59% of
+      instruments, strike-reached 8.6% vs 8.8%, avg loss −2.9% vs −3.0%. ADX>20 is
+      the textbook default, not a fitted threshold. The EMA200 filter looked
+      similar in-sample (+2.2 pts) but FAILED the holdout (55.1% vs 59.7%) — do not
+      use it.
+- [x] **Follow-up 2026-10-28: "ADX > 20 AND rising" — tested, REJECTED.** Prompted
+      by NIFTY's 15 Oct 2026 UP flip: ADX 26.5 passed, but it was the decaying
+      leftover of the preceding DOWN trend (37 → 26.5, falling every candle), and
+      the trade hit SL on 23 Oct. ADX is direction-neutral, so this can happen.
+      Primary variant fixed before running: ADX > 20 and ADX up vs the previous
+      4H candle. Two alternatives ran alongside (same universe, same rules):
+
+      | Variant | 2023-26 win / strike reached / trades | 2022 holdout win / strike reached | Holdout: beats current on |
+      |---|---|---|---|
+      | Base ST 10,3 | 52.2% / 9.1% / 4534 | 58.3% / 10.6% | — |
+      | **ADX > 20 (current)** | **56.5% / 10.1% / 2138** | **61.1% / 11.0%** | — |
+      | + rising, 1 candle | 58.9% / 11.1% / 610 | 61.5% / **14.3%** | 45% of instruments |
+      | + rising, 3 candles | 59.9% / 12.2% / 401 | **56.6%** (below base) / 14.7% | 33% |
+      | + DI agrees with direction | 56.9% / 10.7% / 1748 | 63.6% / 11.2% | 61% |
+
+      Rising-ADX gains in-sample but **fails the holdout**: no win-rate gain over the
+      current filter (61.5 vs 61.1), the 6% strike is reached far more often (14.3%
+      vs 11.0%), and it cuts trades by ~70%. The 3-candle version falls below the
+      unfiltered baseline. "DI agrees" helps on the holdout but adds only +0.4 pts
+      in-sample with a slightly higher strike-reached rate — not a validated gain.
+      **Kept the current ADX > 20.** (This run cuts the 2022 data at 31 Dec, so
+      trades still open at year-end are dropped; that is why its 2022 numbers sit
+      ~1.5-2.5 pts below the first holdout run above. The current filter still beats
+      base on it: +2.8 pts, better on 61% of instruments.) Script and trades:
+      session scratchpad only, not in the repo; rebuild by adding the variants to
+      `SYSTEMS` in `timeframe_indicator_test.py`.
+- [x] **Adopted into the screener 2026-10-28, by the user's decision.** One holdout
+      year on the same universe is encouraging, not proof, and the screener's own
+      filters (edge, buffer, crash-born) were built on unfiltered flips — the
+      combination itself is untested. Implementation (`entry_advisor.py`, filter 6,
+      after "trend underwater"): ADX(14) on the 4H candle that started the current
+      trend must be > 20, matching what the test filtered on (ADX at the flip, not
+      today's ADX). Unknown ADX is excluded too. Rejects show as `weak_trend_adx`.
+      Every journal trade now records `adx_at_flip` (Stage 12b), so the forward
+      record is the check. First run: 7 of the 19 names that cleared the earlier
+      filters were removed (BANKNIFTY, DRREDDY, SHREECEM, TECHM, HDFCBANK,
+      JSWSTEEL, LT; ADX 17–19), and 12 still filled the book 6/6. The five of those
+      logged an hour earlier under the old rule (no candle closed in between) were
+      removed from the journal. If the forward ADX>20 trades don't beat the
+      backtest's 52% baseline, take the filter back out.
+
+### Stage 8h — Intraday setups (same-day, flat by 15:15) — tested, rejected ✅
+- [x] `src/intraday_test.py`, data from `scripts/fetch_5minute.py` (5-minute
+      candles, `data/raw/{symbol}_5minute.csv`). Universe: NIFTY, BANKNIFTY + the
+      19 stocks of the credit-spread shortlist (top 20 clean of the ranking),
+      2023-01-02 to 2026-10-28, ~930 sessions each. Measured on the underlying,
+      % of price (futures-equivalent), round-trip cost 0.03% indices / 0.05%
+      stocks. Standard definitions and parameters, nothing tuned; full rules in
+      the module header. In-sample; 2023-24 vs 2025-26 split as the stability check.
+- [x] Setups: opening-range breakout (15 / 30 min, exit EOD or 2R), gap and go,
+      gap fade (target = previous close), VWAP trend (10:15 side of VWAP + open),
+      VWAP reversion (stretch > half the 14-day average range), and every-flip
+      Supertrend 10,3 (5m, 15m) / EMA 9/21 (15m).
+- [x] **Result: nothing survives costs.** Per-trade net, pooled:
+
+      | Setup | Stocks net / t | Indices net / t | Trades/month/instrument |
+      |---|---|---|---|
+      | Gap fade | **+0.017% / 0.6** | −0.028% / −0.8 | 1.6 / 4.0 |
+      | EMA 9/21 (15m) | −0.063% / −11.4 | **+0.006% / 0.6** | 16.6 / 15.4 |
+      | Gap and go | −0.092% / −1.7 | +0.002% / 0.0 | 0.5 / 1.6 |
+      | Supertrend 10,3 (15m) | −0.060% / −6.4 | −0.006% / −0.4 | 8 / 9 |
+      | Supertrend 10,3 (5m) | −0.059% / −13.6 | −0.015% / −1.8 | 25 / 26 |
+      | ORB 15 / 30 (± 2R) | −0.061 to −0.068% / ≈ −9 | −0.011 to −0.023% | ~18-20 |
+      | VWAP trend / reversion | −0.061% / −0.055% | n/a (no index volume) | 15 / 4 |
+
+      Not one setup is positive net with a t-stat above 1, and the two "best"
+      (stock gap fade, index EMA 9/21) flip sign between halves or years.
+- [x] **Why, from the gross numbers:** on STOCKS every trend-following intraday
+      setup is negative even BEFORE costs (ORB, Supertrend, EMA, VWAP trend: gross
+      −0.9 to −1.8 bps, t ≈ −2) — single stocks mean-revert intraday, so breakouts
+      fail more than they run. The one gross edge is the opposite idea, gap fade
+      (+6.7 bps, t 2.4), and 5 bps of cost eats it. On the INDICES trend-following
+      is mildly positive gross (EMA 9/21 15m +3.6 bps, t 3.3) and 3 bps of cost
+      eats it. Intraday edges here are the same size as the cost of trading them.
+- [x] **Not adopted; do not re-propose plain-indicator intraday without a new
+      angle** (e.g. real option prices, or a cost base far below the assumed).
+      Untested here: expiry-day option selling — needs historical option prices,
+      which Kite does not keep (Stage 8f). Trade-level results were not saved to
+      the repo; rerun with `run_symbol()` per symbol + `summarize()` (~1 min).
+
+### Stage 8i — Indices vs NIFTY 50 stocks vs other F&O stocks (tested) ✅
+- [x] Same harness and rules as Stage 8g (4H Supertrend 10,3, journal trade rules,
+      2023-01 to 2026-10), run on all 217 instruments with 1H data, grouped:
+      6 indices, 50 NIFTY 50 stocks (NSE's ind_nifty50list.csv, Oct 2026), 161
+      other F&O stocks. Per-instrument medians:
+
+      | Group | Win rate | 6% strike reached | Avg loss | Losses > 4% | Worst adverse | Worst gap | Days moving > 5% |
+      |---|---|---|---|---|---|---|---|
+      | Indices | 47.8% | **1.9%** | **−1.7%** | **3.4%** | −8.4% | 5.1% | 1.5 |
+      | NIFTY 50 stocks | 51.6% | 8.9% | −3.2% | 19.3% | −10.3% | 7.2% | 9 |
+      | Other F&O stocks | 52.5% | 20.8% | −4.2% | 29.4% | −15.0% | 9.2% | 26 |
+
+- [x] **Indices win slightly less often under the user's rule but lose far less.**
+      Losses are roughly half the size, and the strike is reached 4-10× less often. Non-NIFTY-50
+      stocks carry most of the damage: a fifth of trades reach the 6% strike.
+- [x] **A 6% strike is not comparable across groups.** On indices it is reached so
+      rarely that the premium there is negligible. Equal-risk strike distances
+      (share of trades reaching the strike, all 6 indices / NIFTY+BANKNIFTY+SENSEX):
+      3% → 13.2 / 9.0%, 4% → 6.3 / 5.1%, 5% → 3.9 / 3.2%. NIFTY 50 stocks: 6% →
+      11.3%, 8% → 4.8%. So a 3-4% index strike carries about the risk of a 6-8%
+      large-cap strike. Whether the premium at 3-4% is worth it is untested: no
+      historical option prices.
+- [x] ADX>20 on indices: win rate 47.8 → 51.9%, but strike reached 1.9 → 3.1% and
+      losses over 4% 3.4 → 5.3%. Unlike stocks, there it trades loss size for win
+      rate. Not yet acted on.
+
+### Stage 8j — Is the premium worth taking? India VIX regime test ✅
+- [x] India VIX daily history from Kite (`data/raw/INDIAVIX_day.csv`, 2021-01 on);
+      percentile vs the trailing 252 sessions, as known the day BEFORE entry. Applied
+      to the Stage 8i index trades (NIFTY, BANKNIFTY, SENSEX; 4H Supertrend 10,3;
+      311 trades 2023-26). Premium richness measured the standard way: the trade's
+      worst adverse move vs VIX's own implied 1-SD move to expiry
+      (VIX × √(days to expiry / 365)).
+
+      | VIX regime at entry | Trades | Avg VIX | Win rate | Avg loss | Implied 1-SD | Median adverse | Beyond 1-SD | 4% reached |
+      |---|---|---|---|---|---|---|---|---|
+      | Bottom third | 127 | 11.9 | 51.2% | −1.34% | 3.0% | 0.77% | **5.5%** | 1.6% |
+      | Middle | 72 | 13.1 | 44.4% | −1.33% | 3.4% | 1.00% | 8.3% | 4.2% |
+      | Top third | 112 | 16.8 | 45.5% | −1.86% | 3.9% | 1.38% | **13.4%** | 9.8% |
+
+- [x] **High VIX did NOT mean better premium for this system — the opposite.** The
+      implied move grows ~30% from bottom to top third; actual adverse moves grow
+      ~80%, moves past 1-SD are 2.4× as frequent, losses are larger. Same direction in
+      both halves (beyond 1-SD: 8.8 → 15.0% in 2023-24, 1.7 → 11.5% in 2025-26).
+      Strongest on BANKNIFTY (adverse/implied 0.28 → 0.56), flat on NIFTY and SENSEX
+      — BANKNIFTY is measured against NIFTY's VIX, so part of that is mismatch.
+- [x] **Shown, not filtered.** One test, 311 trades, in-sample, and it cannot price the
+      extra premium itself (no historical option prices) — the user's premium-based
+      strike choice already moves strikes further out when VIX is high, which this
+      test does not capture. The list prints VIX + percentile and flags the top third.
+      Revisit once the IV recorder (Stage 8f) has months of real premiums.
+
+### Stage 8k — Index-first universe, real spreads, sizing by max loss ✅
+- [x] **Universe (user's decision, from Stage 8i):** NIFTY, BANKNIFTY, SENSEX, then
+      NIFTY 50 stocks only (`config/nifty50.csv`, NSE's list — refresh at the Mar/Sep
+      rebalances). Indices are their own list (`entry_advisor.build_index_list`):
+      filters 1-5, no ADX (Stage 8i: on indices it raised strike-reached), no sector
+      cap / 50-50; same-direction index picks are flagged as one correlated bet.
+      SENSEX now refreshes from BSE and its options come from BFO.
+- [x] **`src/spread_builder.py`** — every pick becomes a real spread, read-only
+      (`kite.quote`, `kite.basket_order_margins` = margin calculator, no orders):
+      - user's rules: capital ₹10L, max loss per trade 2% (₹20,000) cap; hedge = skip
+        one strike, buy the next (index grid 100 pts; stocks use the listed interval)
+      - indices: short strike = FARTHEST strike whose credit / Kite margin ≥ 1.5%
+        (the user's 1.5-2% target), binary-searched. "Return" is on margin blocked,
+        not on capital. Stocks keep the 6/7% containment strike, snapped further OTM
+      - credit = short bid − long ask (last traded price when the book is empty, labelled)
+      - lots = floor(₹20,000 / ((width − credit) × lot size)); 0 lots = "over cap"
+      - flags: strike closer than the Supertrend stop; ≤ 7 days to expiry;
+        Stage 8i's historical strike-reached rate for that distance (indices)
+- [x] Journal (Stage 12b) now records long strike, exchange, lots, credit, margin,
+      return on margin, max loss ₹; it skips picks with 0 lots or no priced spread.
+      Trades opened before this (old universe) keep being tracked to their exit.
+- [x] **Not modelled, by design:** a cap on TOTAL open risk (the list prints the
+      book's total max loss / margin, nothing enforces it); exits other than SL /
+      expiry; whether a 1.5% return is enough for the risk (first run: NIFTY
+      24000/24200 CE risked ₹12,188 for ₹812).
+- [x] **Open question, first run:** SENSEX's current-month expiry was the NEXT day
+      (BSE monthly = last Thursday; 29 Oct 2026), so the 1.5% target landed 1% OTM,
+      inside the stop. "Always current month" (Stage 12b) was chosen for stocks
+      before SENSEX was in scope — needs a roll rule decision.
+
+### Stage 8l — Index strike distance: loss at the stop vs credit kept (modelled) ✅
+- [x] Question (user): a far-OTM spread loses less when the stop hits early with many
+      days left — does that offset its smaller credit? Modelled on the 311 Stage 8i
+      index trades (4H ST 10,3, real entry/exit/expiry): spread priced at entry and
+      at exit with Black-Scholes, sigma = India VIX (prior close at entry, exit-day
+      close at exit, so vol spikes at the stop are captured; BANKNIFTY/SENSEX scaled
+      by 60-day realized vol vs NIFTY). User's hedge (200 pts), current lot sizes.
+      Per lot:
+
+      | Strike distance | Credit | Kept at expiry | Lost at SL | SL loss % of max | Net, no costs | Net, ₹150 costs |
+      |---|---|---|---|---|---|---|
+      | 2% | ₹1,643 | +₹1,242 | −₹574 | 22.5% | **+₹173** | +₹23 |
+      | 3% | ₹1,108 | +₹759 | −₹335 | 16.4% | **+₹115** | −₹35 |
+      | 4% | ₹739 | +₹456 | −₹225 | 13.3% | **+₹55** | −₹95 |
+      | 5% | ₹479 | +₹271 | −₹157 | 10.5% | **+₹19** | −₹131 |
+
+- [x] **The user is right about the stop:** far strikes lose far less when it fires —
+      with ≤ 7 days left a 5% strike loses ~2% of its max loss vs 28% at 2%; with
+      > 15 days left 12% vs 25%. **But the same effect shrinks what is kept at expiry
+      even more**, so closer still nets more per lot. The gap is much smaller than the
+      crude "strike reached = full max loss" estimate given in chat earlier
+      (+₹1,670 at 3% vs +₹530 at 5%) — that estimate was wrong in size.
+- [x] **Costs decide it.** At ~₹100-150 per spread round trip (4 orders + charges +
+      slippage), 4-5% strikes are negative and 3% is about breakeven; the modelled
+      edge of the whole index book is thin. Limits: flat VIX, no skew (real OTM puts
+      price above VIX, OTM calls below), no bid-ask on far strikes, in-sample. Real
+      premiums from the journal / IV recorder are what settles it.
+
+### Stage 8m — NIFTY: iron condor (7%) or credit spread (3%)? Regime test — REJECTED ✅
+- [x] `src/ic_vs_spread_test.py`. 141 monthly cycles, Jan 2015 – Sep 2026 (NIFTY 1H
+      from 2015 → `data/raw/NIFTY_60minute_2015.csv`; VIX from 2013). Per cycle, 1 lot:
+      IC = 7% OTM both sides, 200-pt wings, entered at the first 4H close of the cycle,
+      exit on touching either short strike else expiry; CS = the production 4H
+      Supertrend trades of that cycle at a 3% strike. Both priced with Black-Scholes,
+      sigma = India VIX (Stage 8l model). Regime rule fixed BEFORE running: IC when
+      daily ADX(14) < 20 and VIX percentile ≤ 66, else CS. Built 2015-21, holdout 2022-26.
+
+      | Per month | Always IC 7% | Always CS 3% | Rule |
+      |---|---|---|---|
+      | 2015-21 avg / losing months | ₹148 / 19% | **₹256** / 33% | ₹190 / 31% |
+      | 2022-26 avg / losing months | ₹310 / 14% | ₹494 / 28% | **₹692** / 21% |
+      | Worst month (all) | −₹5,752 | −₹8,799 | −₹8,799 |
+
+- [x] **The rule fails its own test**: worse than always-CS in the period it was built
+      on, better only in the holdout — inconsistent, so not a regime signal. The
+      textbook reading behind it does not hold here: with ADX < 20 the IC was breached
+      11-22% of months and averaged −₹401 to +₹86; its best cell was ADX 20-25
+      (n = 8-11 per cell, too small to act on).
+- [x] **7% IC: most consistent, least profitable.** Losing months 17% vs 31% for CS,
+      smaller worst month, but touched a 7% strike in 18% of months (26/141: 14 call,
+      12 put) and earned ~40% less. **And the model flatters it:** checked against live
+      quotes 28 Oct 2026, the model priced the 7% IC at ₹1,121/lot vs ₹634 real — the
+      7% call side 11.3 vs 4.8 (OTM calls trade far below VIX), put 6.0 vs 5.0. The 3%
+      CS was off by only +10% (₹3,069 vs ₹2,801). Correcting for that puts the 7% IC
+      near zero or negative per month; the CS stays positive. One day's calibration.
+- [x] **Conclusion: no tested signal says "IC this month"; the directional credit
+      spread is the better default for NIFTY.** Short IC timing stays unsolved (Stage 6)
+      — VIX + ADX did not crack it. Real premiums (IV recorder) are the remaining route.
+
 ### Stage 9 — Debit spread signal (EMA/ADX, 1H) — in progress
 - [x] `src/ema_adx_signal.py` — NEW module, parallel to `flip_analysis.py` not a
       modification of it. EMA(9/21) crossover + rising-ADX confirmation, built for

@@ -26,10 +26,30 @@
 #      leading the containment table.
 #   5. badly underwater     - the trend is already running against its own
 #      entry; the thesis is failing before it is entered.
-#   6. sector cap           - the concentration gap the README flags as unbuilt.
-#   7. 50/50 direction      - so a market-wide shock cannot hit every position.
+#   6. weak trend at flip   - ADX(14) on the 4H flip candle was <= 20. Tested in
+#      Stage 8g (timeframe_indicator_test.py): 56.5% vs 52.2% wins 2023-26,
+#      better on 80% of instruments and in every year, and held on the unused
+#      2022 holdout (63.8% vs 59.7%). Skipped flips won only 48.5%. In-sample
+#      plus one holdout year, tested WITHOUT the other filters here - adopted
+#      2026-10-28 by the user's decision, being checked forward in the journal.
+#   7. sector cap           - the concentration gap the README flags as unbuilt.
+#   8. 50/50 direction      - so a market-wide shock cannot hit every position.
+#
+# UNIVERSE (2026-10-28, user's decision, backed by Stage 8i): indices first -
+# NIFTY, BANKNIFTY, SENSEX - then NIFTY 50 stocks only. The other ~160 F&O
+# stocks reached a 6% strike on a fifth of trades and moved >5% in a day ~26
+# times in four years. Indices get their own list (build_index_list): same
+# filters 1-5, but NOT the ADX filter - on indices it raised the win rate but
+# also the strike-reached rate (1.9 -> 3.1%) and losses over 4%, which is the
+# wrong trade for a limited-loss book (Stage 8i). Sector cap and 50/50 do not
+# apply there: the three indices move together and are shown as one bet.
+
+import os
 
 import pandas as pd
+import pandas_ta as ta
+
+from src.supertrend import load_raw_data
 
 from src.daily_screener import screen_list, split_by_edge, rank_setups
 from src.market_context import enrich
@@ -37,6 +57,40 @@ from src.market_context import enrich
 MIN_BUFFER_TO_FLIP_PCT = 1.5   # ~1.5 ordinary sessions of room before invalidation
 MIN_MOVED_SINCE_ENTRY_PCT = -1.0  # tolerate slight drawdown, not a failing thesis
 MAX_PER_SECTOR = 1
+MIN_ADX_AT_FLIP = 20.0   # standard trend-strength reading, not tuned (Stage 8g)
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INDEX_UNIVERSE = ["NIFTY", "BANKNIFTY", "SENSEX"]
+NIFTY50_LIST = os.path.join(PROJECT_ROOT, "config", "nifty50.csv")   # NSE ind_nifty50list.csv
+RANKING = os.path.join(PROJECT_ROOT, "exports", "RANKING_credit_spreads.xlsx")
+
+
+def stock_universe():
+    """
+    NIFTY 50 members that are gap-risk clean in the credit spread ranking, in
+    ranking order. Refresh config/nifty50.csv when NSE rebalances (Mar / Sep):
+    https://archives.nseindia.com/content/indices/ind_nifty50list.csv
+    """
+    members = set(pd.read_csv(NIFTY50_LIST)["Symbol"])
+    ranking = pd.read_excel(RANKING)
+    clean = ranking[ranking["gap_risk_flag"].isna() | (ranking["gap_risk_flag"] == "")]
+    return [s for s in clean["symbol"] if s in members]
+
+
+def adx_at_flip(symbol, flip_date):
+    """
+    ADX(14) on the 4H candle that started the current trend - the same value
+    the Stage 8g test filtered on. None if the candle isn't in saved data.
+    """
+    if flip_date is None or pd.isna(flip_date):
+        return None
+    df = load_raw_data(symbol, "4hour")
+    df.index = pd.to_datetime(df.index)
+    if df.index.tz is not None:
+        df.index = df.index.tz_localize(None)
+    adx = ta.adx(df["high"], df["low"], df["close"], length=14)["ADX_14"]
+    adx = adx[adx.index <= pd.Timestamp(flip_date)].dropna()
+    return round(float(adx.iloc[-1]), 1) if not adx.empty else None
 
 
 def _reason(row):
@@ -64,6 +118,8 @@ def _reason(row):
     if pd.notna(row.get("moved_since_entry_pct")):
         state = "working" if row["moved_since_entry_pct"] > 0 else "slightly underwater"
         bits.append(f"Trend is {state} ({row['moved_since_entry_pct']:+.2f}% since flip).")
+    if pd.notna(row.get("adx_at_flip")):
+        bits.append(f"ADX {row['adx_at_flip']} at the flip (> {MIN_ADX_AT_FLIP:g} required).")
     if pd.notna(row.get("beta")):
         bits.append(f"Beta {row['beta']}.")
     if pd.notna(row.get("realized_vol_rank")):
@@ -90,15 +146,8 @@ def _suggest_strike(row):
     return round(row["spot"] * (1 + sign * pct / 100), 1), pct
 
 
-def build_entry_list(symbols, n_total=6, min_buffer=MIN_BUFFER_TO_FLIP_PCT,
-                        min_moved=MIN_MOVED_SINCE_ENTRY_PCT,
-                        max_per_sector=MAX_PER_SECTOR):
-    """
-    Returns (final_list, excluded, summary).
-
-    Nothing is silently dropped — `excluded` names every symbol removed and the
-    stage that removed it, so the list can be trusted without being audited.
-    """
+def _filter_chain(symbols, min_buffer, min_moved, use_adx):
+    """Filters 1-6. Returns (status, surviving pool, excluded)."""
     status = enrich(screen_list(symbols))
     tradeable, watchlist, no_edge = split_by_edge(status)
 
@@ -121,6 +170,40 @@ def build_entry_list(symbols, n_total=6, min_buffer=MIN_BUFFER_TO_FLIP_PCT,
     excluded["trend_underwater"] = pool[under]["symbol"].tolist()
     pool = pool[~under]
 
+    # Unknown ADX (flip candle missing from saved data) is excluded too: the
+    # tested rule is "take only flips with ADX > 20", not "skip only ADX <= 20".
+    pool["adx_at_flip"] = [adx_at_flip(s, d) for s, d in zip(pool["symbol"], pool["flip_date"])]
+    if use_adx:
+        weak = ~(pd.to_numeric(pool["adx_at_flip"]) > MIN_ADX_AT_FLIP).fillna(False).astype(bool)
+        excluded["weak_trend_adx"] = pool[weak]["symbol"].tolist()
+        pool = pool[~weak]
+    return status, pool, excluded
+
+
+def build_index_list(min_buffer=MIN_BUFFER_TO_FLIP_PCT, min_moved=MIN_MOVED_SINCE_ENTRY_PCT):
+    """
+    NIFTY / BANKNIFTY / SENSEX through filters 1-5 (no ADX, no sector cap, no
+    50/50 - see header). Returns (final, excluded). Same-direction index picks
+    are one correlated bet, not diversification.
+    """
+    _, pool, excluded = _filter_chain(INDEX_UNIVERSE, min_buffer, min_moved, use_adx=False)
+    final = pool.copy()
+    if not final.empty:
+        final["reason"] = final.apply(_reason, axis=1)
+        final = final.sort_values("symbol", key=lambda s: s.map(INDEX_UNIVERSE.index))
+    return final.reset_index(drop=True), excluded
+
+
+def build_entry_list(symbols, n_total=6, min_buffer=MIN_BUFFER_TO_FLIP_PCT,
+                        min_moved=MIN_MOVED_SINCE_ENTRY_PCT,
+                        max_per_sector=MAX_PER_SECTOR):
+    """
+    Returns (final_list, excluded, summary).
+
+    Nothing is silently dropped — `excluded` names every symbol removed and the
+    stage that removed it, so the list can be trusted without being audited.
+    """
+    status, pool, excluded = _filter_chain(symbols, min_buffer, min_moved, use_adx=True)
     ranked = rank_setups(pool)
 
     # 50/50 direction with a sector cap, filled by INTERLEAVING the two sides

@@ -12,6 +12,12 @@ why. Before proposing anything, check whether it was already tried:
 | Looking for | Read |
 |---|---|
 | Credit spread strategy, current state | Stages 6, 7, 8b–8f |
+| Other timeframes / indicators vs 4H Supertrend (tested); ADX>20 entry filter (adopted) | Stage 8g |
+| Intraday setups (ORB, VWAP, gaps, 5m/15m indicators) — tested, rejected | Stage 8h |
+| Indices vs NIFTY 50 vs other stocks (loss size, strike distance) | Stage 8i |
+| India VIX regime vs premium (high VIX was worse) | Stage 8j |
+| Index-first universe, live spreads, sizing by max loss | Stage 8k |
+| NIFTY regime: iron condor vs credit spread (rejected) | Stage 8m |
 | Directional edge / no-edge detection | Stage 8c |
 | Single-day move risk, the PIIND incident | Stage 8d |
 | The go-to entry list, market context | Stage 8e |
@@ -105,7 +111,8 @@ src/       flip_analysis, supertrend, summary_stats, monthly_range  (core)
            strategy_scoring        per-strategy rankings
            daily_screener          directional edge + tradeable/watchlist/no_edge
            market_context          buffer-to-flip, beta, sector, realized_vol_rank
-           entry_advisor           the final balanced list
+           entry_advisor           the final lists: indices + NIFTY 50 stocks (Stage 8k)
+           spread_builder          live strikes, credit, margin, lots by max loss (read-only)
            black_scholes           BS pricer + implied_vol solver
            iv_recorder             daily forward ATM-IV snapshot (Stage 8f)
            paper_trading           forward-only journal (Stage 12)
@@ -131,7 +138,7 @@ logs/      run logs, paper_trading_journal.csv, iv_history/{symbol}.csv (tracked
   months before a percentile rank is usable, nothing reads it yet. In the meantime,
   `market_context.realized_vol_rank()` (backfillable, live today) is the interim
   proxy — shown in notebook 06's final list, informational only, no threshold set.
-- **Short IC entry timing** — still unsolved. Premium is rich at month-start but
+- **Short IC entry timing** — still unsolved (VIX percentile + ADX regime rule also failed, Stage 8m). Premium is rich at month-start but
   unconfirmed; confirmation arrives once theta is spent. Trend-freshness was tested
   as a fix (correlation 0.017 over 10,671 symbol-months) and rejected.
 - **Earnings / corporate actions** — no source in Kite Connect. Manual.

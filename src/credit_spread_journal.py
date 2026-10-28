@@ -44,14 +44,17 @@ JOURNAL_PATH = os.path.join(PROJECT_ROOT, "logs", "credit_spread_journal.csv")
 COLUMNS = [
     "trade_id", "symbol", "structure", "direction", "sector", "setup_score",
     "logged_at", "flip_date", "entry_spot", "short_strike", "strike_buffer_pct",
-    "initial_sl", "expiry",
+    "initial_sl", "adx_at_flip", "expiry",
+    # spread + sizing (src/spread_builder.py, from 2026-10-28; blank before)
+    "long_strike", "option_exchange", "lots", "credit", "margin_rupees",
+    "return_on_margin_pct", "max_loss_rupees",
     "status", "exit_reason", "exit_date", "exit_spot", "sl_at_exit",
     "pct_move", "max_adverse_pct", "strike_touched", "expired_beyond_strike",
     "days_held", "last_checked",
 ]
 
 MARKET_CLOSE = (15, 30)
-INDEX_SYMBOLS = {"NIFTY": ("NIFTY 50", "NSE"), "BANKNIFTY": ("NIFTY BANK", "NSE")}
+from src.instruments import INDEX_SYMBOLS   # SENSEX lives on BSE
 
 
 def load_journal():
@@ -59,7 +62,13 @@ def load_journal():
     # strings written into them later; pandas 3 refuses that on a float column.
     if not os.path.exists(JOURNAL_PATH):
         return pd.DataFrame(columns=COLUMNS, dtype=object)
-    return pd.read_csv(JOURNAL_PATH, dtype=object)
+    journal = pd.read_csv(JOURNAL_PATH, dtype=object)
+    # Columns added after a journal was started (adx_at_flip, 2026-10-28)
+    # stay blank on the older rows rather than being back-filled.
+    for col in COLUMNS:
+        if col not in journal.columns:
+            journal[col] = None
+    return journal.astype(object)
 
 
 def save_journal(journal):
@@ -105,16 +114,12 @@ def refresh_symbols(kite, symbols, to_date=None):
 
 def monthly_expiries(kite):
     """
-    symbol -> sorted list of MONTHLY option expiry dates, from Kite's NFO
-    instrument dump (real dates, holidays already applied). Monthly = the
-    last listed expiry in each calendar month, which drops NIFTY's weeklies.
+    symbol -> sorted list of MONTHLY option expiry dates, from Kite's NFO + BFO
+    instrument dumps (real dates, holidays already applied). Monthly = the
+    last listed expiry in each calendar month, which drops the weeklies.
     """
-    df = pd.DataFrame(kite.instruments("NFO"))
-    opts = df[df["instrument_type"].isin(["CE", "PE"])].copy()
-    opts["expiry"] = pd.to_datetime(opts["expiry"]).dt.date
-    opts["ym"] = [(d.year, d.month) for d in opts["expiry"]]
-    monthly = opts.groupby(["name", "ym"])["expiry"].max().reset_index()
-    return {name: sorted(g["expiry"].tolist()) for name, g in monthly.groupby("name")}
+    from src.spread_builder import option_chain, monthly_expiries as _monthly
+    return _monthly(option_chain(kite))
 
 
 def current_month_expiry(symbol, expiries, today=None):
@@ -232,7 +237,17 @@ def record_entries(journal, final, expiries, now=None):
     for _, r in final.iterrows():
         if r["symbol"] in already_open:
             continue
-        expiry = current_month_expiry(r["symbol"], expiries, now.date())
+        # A spread that couldn't be priced, or whose single lot already
+        # breaks the max-loss cap, is not a trade the user would take.
+        if pd.notna(r.get("spread_problem")):
+            skipped.append(f"{r['symbol']}: not logged - {r['spread_problem']}")
+            continue
+        if bool(r.get("lot_too_big", False)):
+            skipped.append(f"{r['symbol']}: not logged - one lot's max loss "
+                           f"₹{r['max_loss_per_lot']:,.0f} is over the per-trade cap")
+            continue
+        expiry = (pd.Timestamp(r["expiry"]).date() if pd.notna(r.get("expiry"))
+                  else current_month_expiry(r["symbol"], expiries, now.date()))
         if expiry is None:
             skipped.append(f"{r['symbol']}: no monthly option expiry found")
             continue
@@ -244,8 +259,16 @@ def record_entries(journal, final, expiries, now=None):
             "logged_at": now.strftime("%Y-%m-%d %H:%M"),
             "flip_date": _last_flip_date(r["symbol"], now),
             "entry_spot": r["spot"], "short_strike": r["short_strike"],
-            "strike_buffer_pct": r["strike_buffer_pct"],
-            "initial_sl": r["flip_level"], "expiry": str(expiry),
+            "strike_buffer_pct": (r["strike_distance_pct"] if pd.notna(r.get("strike_distance_pct"))
+                                  else r.get("strike_buffer_pct")),
+            "initial_sl": r["flip_level"], "adx_at_flip": r.get("adx_at_flip"),
+            "expiry": str(expiry),
+            "long_strike": r.get("long_strike"), "option_exchange": r.get("option_exchange"),
+            "lots": r.get("lots"), "credit": r.get("credit"),
+            "margin_rupees": (r["margin_per_lot"] * r["lots"]
+                              if pd.notna(r.get("margin_per_lot")) else None),
+            "return_on_margin_pct": r.get("return_on_margin_pct"),
+            "max_loss_rupees": r.get("max_loss_total"),
             "status": "OPEN", "strike_touched": False,
             "last_checked": now.strftime("%Y-%m-%d %H:%M"),
         })

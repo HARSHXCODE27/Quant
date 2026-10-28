@@ -221,6 +221,7 @@ def check_trend_status(symbol):
         "symbol": symbol,
         "direction": direction,
         "trend_age_days": age_days,
+        "flip_date": entry_date,
         "median_duration": median_dur,
         "past_median": age_days > median_dur if median_dur else None,
         "past_75th_pct": age_days > p75_dur if p75_dur else None,

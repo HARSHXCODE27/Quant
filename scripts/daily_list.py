@@ -11,6 +11,11 @@ output and burns API calls for nothing.
     python scripts/daily_list.py --no-refresh   # rebuild from saved data only
     python scripts/daily_list.py --n 8          # smaller book
 
+Two lists: INDICES first (NIFTY, BANKNIFTY, SENSEX), then NIFTY 50 stocks
+only (Stage 8i). With a live token each pick becomes a real hedged spread -
+listed strikes, live credit, Kite's margin, lots sized so max loss stays
+within the per-trade cap (src/spread_builder.py).
+
 Writes reports/YYYY-MM-DD_HHMM_entry_list.md and prints the same to stdout.
 
 Requires a valid Kite token unless --no-refresh is passed. Tokens expire
@@ -28,25 +33,23 @@ import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORTS_DIR = os.path.join(PROJECT_ROOT, "reports")
-RANKING = os.path.join(PROJECT_ROOT, "exports", "RANKING_credit_spreads.xlsx")
 
 
-def shortlist_symbols(top_n=50):
-    ranking = pd.read_excel(RANKING)
-    clean = ranking[ranking["gap_risk_flag"].isna() | (ranking["gap_risk_flag"] == "")]
-    syms = clean.head(top_n)["symbol"].tolist() + ["NIFTY", "BANKNIFTY"]
-    return list(dict.fromkeys(syms))
+def shortlist_symbols(top_n=None):
+    """NIFTY 50 stocks (gap-clean, ranking order) + the index universe."""
+    from src.entry_advisor import stock_universe, INDEX_UNIVERSE
+    return list(dict.fromkeys(stock_universe()[:top_n] + INDEX_UNIVERSE))
 
 
 def refresh(symbols):
     """Incremental candle catch-up for the shortlist only. The one API step."""
     from src.auth import get_kite
-    from src.instruments import build_nse_token_lookup, get_index_token
+    from src.instruments import build_nse_token_lookup, get_index_token, INDEX_SYMBOLS
     from src.scale_pipeline import process_stock_incremental
 
     kite = get_kite()
     lookup = build_nse_token_lookup(kite)
-    index_symbols = {"NIFTY": ("NIFTY 50", "NSE"), "BANKNIFTY": ("NIFTY BANK", "NSE")}
+    index_symbols = INDEX_SYMBOLS
 
     failed = []
     for i, symbol in enumerate(symbols, start=1):
@@ -65,12 +68,72 @@ def refresh(symbols):
     return failed
 
 
-def render(final, excluded, summary, refresh_errors):
+def _spread_line(r):
+    """One line describing the actual spread, or why there isn't one."""
+    if "lots" not in r or pd.isna(r.get("lots")):
+        if pd.notna(r.get("spread_problem")) if "spread_problem" in r else False:
+            return f"- ⚠ **No spread:** {r['spread_problem']}"
+        return "- *Spread not priced (run with a live token)*"
+    opt = "PE" if r["direction"] == "UP" else "CE"
+    line = (f"- **Sell {r['short_strike']:,.0f} {opt} / buy {r['long_strike']:,.0f} {opt}**, "
+            f"exp {r['expiry']} ({_dte(r)}d) · {r['strike_distance_pct']}% OTM · "
+            f"credit {r['credit']} ({r['quote_basis']}) · "
+            f"{int(r['lots'])} lot(s) × {int(r['lot_size'])} · "
+            f"max loss ₹{r['max_loss_total']:,.0f} · credit ₹{r['credit_total']:,.0f} · "
+            f"margin ₹{r['margin_per_lot'] * r['lots']:,.0f} · "
+            f"return on margin {r['return_on_margin_pct']}%")
+    notes = []
+    if bool(r.get("lot_too_big", False)):
+        notes.append(f"one lot's max loss ₹{r['max_loss_per_lot']:,.0f} is over the cap — skip")
+    if pd.notna(r.get("hist_strike_reach_pct")):
+        notes.append(f"strikes this far were reached {r['hist_strike_reach_pct']}% of the time (Stage 8i)")
+    if bool(r.get("strike_inside_sl", False)):
+        notes.append("strike is CLOSER than the Supertrend stop — price can reach it before the stop fires")
+    if _dte(r) <= 7:
+        notes.append(f"expires in {_dte(r)} days")
+    return line + ("".join(f"\n  - {n}" for n in notes))
+
+
+def VIX_LINE(risk):
+    return (f"India VIX {risk['vix']} — {risk['vix_pctile']}th percentile of the past year "
+            f"({risk['vix_regime']})")
+
+
+def _dte(r):
+    return (pd.Timestamp(r["expiry"]).date() - datetime.now().date()).days
+
+
+def render(final, excluded, summary, refresh_errors, index_final=None, index_excluded=None,
+           risk=None):
     now = datetime.now()
     L = [f"# Entry list — {now:%Y-%m-%d %H:%M}", ""]
 
     if refresh_errors:
         L += ["## ⚠ Refresh problems", ""] + [f"- {e}" for e in refresh_errors] + [""]
+
+    if risk:
+        L += [f"**Book if all taken:** max loss ₹{risk['max_loss']:,} "
+              f"({risk['max_loss_pct']}% of capital) · credit ₹{risk['credit']:,} · "
+              f"margin ₹{risk['margin']:,} ({risk['margin_pct']}%) · "
+              f"{risk['positions']} position(s)", ""]
+
+    if risk and "vix" in risk:
+        L += [f"**{VIX_LINE(risk)}**" + (" — in the top third, index trades broke VIX's implied range "
+              "2.4× as often and lost more (Stage 8j). Context, not a filter." if risk["vix_regime"] == "HIGH" else ""), ""]
+    L += ["## Indices", ""]
+    if index_final is None or index_final.empty:
+        L += ["*No index cleared the filters.*", ""]
+    else:
+        if index_final["direction"].nunique() == 1 and len(index_final) > 1:
+            L += ["> ⚠ All index picks point the same way — they move together, "
+                  "so this is ONE bet sized as several. Consider taking only one.", ""]
+        for _, r in index_final.iterrows():
+            struct = "BULL PUT" if r["direction"] == "UP" else "BEAR CALL"
+            L += [f"### {r['symbol']} — {struct}", "", _spread_line(r), f"- {r['reason']}", ""]
+    for key, names in (index_excluded or {}).items():
+        if names:
+            L.append(f"- *{key}:* {', '.join(names)}")
+    L += ["", "## NIFTY 50 stocks", ""]
 
     L += [
         f"**{summary['selected']} of {summary['screened']} screened** — "
@@ -85,7 +148,6 @@ def render(final, excluded, summary, refresh_errors):
               "the filters. Consider trading fewer positions rather than forcing "
               "in a weak bear call.", ""]
 
-    L += ["---", "", "## The list", ""]
     if final.empty:
         L += ["*Nothing cleared the filters today. That is a valid outcome — "
               "sitting out is a position.*", ""]
@@ -95,8 +157,7 @@ def render(final, excluded, summary, refresh_errors):
             L += [
                 f"### {r['symbol']} — {struct}  ·  score {r['setup_score']}  ·  {r['sector']}",
                 "",
-                f"- **Short strike ~{r['short_strike']}** "
-                f"({r['strike_buffer_pct']}% from spot {r['spot']})",
+                _spread_line(r),
                 f"- {r['reason']}",
                 "",
             ]
@@ -108,6 +169,7 @@ def render(final, excluded, summary, refresh_errors):
         "crash_born_flip": "Flip born on an outlier day — stats do not describe it",
         "thin_buffer_to_flip": "Too close to invalidating the trend",
         "trend_underwater": "Trend already running against its own entry",
+        "weak_trend_adx": "Weak trend at the flip — ADX(14) not above 20",
         "sector_cap": "Sector already filled",
     }
     for key, label in labels.items():
@@ -121,7 +183,8 @@ def render(final, excluded, summary, refresh_errors):
         "## Still manual — not in this list",
         "",
         "- **Earnings / corporate actions** — no data source exists in Kite Connect.",
-        "- **IV rank** — unbuilt; nothing here says whether the premium is worth taking.",
+        "- **IV rank** — unbuilt; return on margin is shown, but nothing yet says whether",
+        "  the premium is rich or cheap for this underlying.",
         "- **Options liquidity** — handled manually by choice.",
         "- **Exits** — deliberately not modelled. `exhaustion_test.py` found no usable",
         "  duration-based exit signal, and profit-target / DTE rules are untested here.",
@@ -132,18 +195,50 @@ def render(final, excluded, summary, refresh_errors):
     return "\n".join(L)
 
 
-def render_compact(final, excluded, summary):
+def _compact_spread(r):
+    if "lots" not in r or pd.isna(r.get("lots")):
+        return f"  {'':11} {r.get('spread_problem') or 'spread not priced'}"
+    opt = "PE" if r["direction"] == "UP" else "CE"
+    flags = []
+    if bool(r.get("lot_too_big", False)):
+        flags.append("1 LOT OVER CAP")
+    if bool(r.get("strike_inside_sl", False)):
+        flags.append("strike inside SL")
+    if _dte(r) <= 7:
+        flags.append(f"{_dte(r)}d to expiry")
+    return (f"  {'':11} {r['short_strike']:,.0f}/{r['long_strike']:,.0f} {opt} {r['expiry']}"
+            f"  {r['strike_distance_pct']:.1f}% OTM  credit {r['credit']:.2f}"
+            f"  {int(r['lots'])} lot  max loss ₹{r['max_loss_total']:,.0f}"
+            f"  credit ₹{r['credit_total']:,.0f}  RoM {r['return_on_margin_pct']:.2f}%"
+            + (f"  [{', '.join(flags)}]" if flags else ""))
+
+
+def render_compact(final, excluded, summary, index_final=None, risk=None):
     """
     One-screen table for the terminal. The full markdown report still gets
     written either way — this exists because ~60 lines of markdown is exactly
     the length editors and terminals start collapsing, which buries the list.
     """
-    L = [
-        f"ENTRY LIST  {datetime.now():%Y-%m-%d %H:%M}   "
-        f"{summary['up']} bull put / {summary['down']} bear call"
-        f"   beta {summary['mean_beta_up']} UP vs {summary['mean_beta_down']} DOWN",
-        "",
-    ]
+    L = [f"ENTRY LIST  {datetime.now():%Y-%m-%d %H:%M}", ""]
+    if risk:
+        L += [f"  BOOK: max loss ₹{risk['max_loss']:,} ({risk['max_loss_pct']}% of capital)"
+              f"  credit ₹{risk['credit']:,}  margin ₹{risk['margin']:,} ({risk['margin_pct']}%)", ""]
+    if risk and "vix" in risk:
+        L += [f"  {VIX_LINE(risk)}" + ("  ** high: moves broke the implied range 2.4x as often (Stage 8j) **"
+                                        if risk["vix_regime"] == "HIGH" else ""), ""]
+    L.append("  INDICES")
+    if index_final is None or index_final.empty:
+        L.append("  none cleared the filters")
+    else:
+        if index_final["direction"].nunique() == 1 and len(index_final) > 1:
+            L.append("  ** all same direction — one correlated bet, consider taking only one **")
+        for _, r in index_final.iterrows():
+            struct = "BULL PUT" if r["direction"] == "UP" else "BEAR CALL"
+            L.append(f"  {r['symbol']:<11} {struct:<10} {int(r['trend_age_days']):>3}d  spot "
+                     f"{r['spot']:,.1f}  SL {r['flip_level']:,.1f}  buffer {r['buffer_to_flip_pct']:.1f}%")
+            L.append(_compact_spread(r))
+    L += ["", f"  NIFTY 50 STOCKS   {summary['up']} bull put / {summary['down']} bear call"
+              f"   beta {summary['mean_beta_up']} UP vs {summary['mean_beta_down']} DOWN", ""]
     if summary["down"] != summary["up"]:
         L += ["  ** NOT BALANCED — too few DOWN candidates survived; "
               "consider trading fewer positions **", ""]
@@ -152,14 +247,16 @@ def render_compact(final, excluded, summary):
         L += ["  nothing cleared the filters — sitting out is a position", ""]
     else:
         L.append(f"  {'SYMBOL':<11} {'STRUCTURE':<10} {'AGE':>4} {'STRIKE':>10}  "
-                    f"{'SPOT':>10}  {'SECTOR':<11} {'WIN':>5} {'C6%':>6} {'BUF':>5} {'SC':>5}")
-        L.append("  " + "-" * 89)
+                    f"{'SPOT':>10}  {'SECTOR':<11} {'WIN':>5} {'C6%':>6} {'BUF':>5} {'ADX':>5} {'SC':>5}")
+        L.append("  " + "-" * 95)
         for _, r in final.iterrows():
             struct = "BULL PUT" if r["direction"] == "UP" else "BEAR CALL"
-            L.append(f"  {r['symbol']:<11} {struct:<10} {int(r['trend_age_days']):>3}d {r['short_strike']:>10,.1f}  "
+            L.append(f"  {r['symbol']:<11} {struct:<10} {int(r['trend_age_days']):>3}d {(r['short_strike'] if pd.notna(r.get('short_strike')) else r.get('suggested_strike')):>10,.1f}  "
                         f"{r['spot']:>10,.1f}  {r['sector']:<11} "
                         f"{r['dir_win_rate']:>4.1f}% {r['contained_6pct']:>5.1f}% "
-                        f"{r['buffer_to_flip_pct']:>4.1f}% {r['setup_score']:>5.1f}")
+                        f"{r['buffer_to_flip_pct']:>4.1f}% {r['adx_at_flip']:>5.1f} {r['setup_score']:>5.1f}")
+            if "lots" in r:
+                L.append(_compact_spread(r))
     L.append("")
     n_ex = sum(len(v or []) for v in excluded.values())
     L.append(f"  {n_ex} excluded — see the full report for names and reasons")
@@ -170,7 +267,8 @@ def render_compact(final, excluded, summary):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=12, help="total positions (split 50/50)")
-    ap.add_argument("--top", type=int, default=50, help="how deep into the ranking to screen")
+    ap.add_argument("--top", type=int, default=None,
+                    help="limit to the top N NIFTY 50 stocks by ranking (default: all)")
     ap.add_argument("--no-refresh", action="store_true", help="skip the API catch-up")
     ap.add_argument("--full", action="store_true",
                     help="print the full markdown instead of the compact table")
@@ -178,14 +276,30 @@ def main():
                     help="cap per sector, applied PER DIRECTION (default 2)")
     args = ap.parse_args()
 
+    from src.entry_advisor import build_entry_list, build_index_list, INDEX_UNIVERSE
     symbols = shortlist_symbols(args.top)
     errors = [] if args.no_refresh else refresh(symbols)
 
-    from src.entry_advisor import build_entry_list
-    final, excluded, summary = build_entry_list(symbols, n_total=args.n,
+    stocks = [s for s in symbols if s not in INDEX_UNIVERSE]
+    final, excluded, summary = build_entry_list(stocks, n_total=args.n,
                                                 max_per_sector=args.max_per_sector)
+    index_final, index_excluded = build_index_list()
 
-    out = render(final, excluded, summary, errors)
+    risk = None
+    if not args.no_refresh:
+        from src.auth import get_kite
+        from src.spread_builder import add_spreads, risk_summary, vix_context
+        kite = get_kite()
+        index_final = add_spreads(kite, index_final, set(INDEX_UNIVERSE))
+        final = add_spreads(kite, final, set(INDEX_UNIVERSE))
+        both = pd.concat([index_final, final], ignore_index=True)
+        risk = risk_summary(both)
+        try:
+            risk.update(vix_context(kite))
+        except Exception as e:
+            risk["vix_error"] = str(e)
+
+    out = render(final, excluded, summary, errors, index_final, index_excluded, risk)
     os.makedirs(REPORTS_DIR, exist_ok=True)
 
     # Timestamped copy for history, plus a STABLE path so the file can be left
@@ -199,7 +313,7 @@ def main():
 
     if errors:
         print(f"  ** {len(errors)} refresh problems — see full report **")
-    print(out if args.full else render_compact(final, excluded, summary))
+    print(out if args.full else render_compact(final, excluded, summary, index_final, risk))
     print(f"\n  full report: reports/latest_entry_list.md")
 
     # Paper journal: every name on this list is logged as a trade and tracked
@@ -208,7 +322,8 @@ def main():
     if not args.no_refresh:
         from src.auth import get_kite
         from src.credit_spread_journal import run_journal
-        journal, logged, problems = run_journal(get_kite(), final, already_refreshed=symbols)
+        journal, logged, problems = run_journal(kite, pd.concat([index_final, final], ignore_index=True),
+                                                already_refreshed=symbols)
         n_open = int((journal["status"] == "OPEN").sum())
         print(f"\n  journal: {len(logged)} new trade(s) logged"
               f"{' (' + ', '.join(logged) + ')' if logged else ''}, {n_open} open"
