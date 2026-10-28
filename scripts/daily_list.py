@@ -133,7 +133,7 @@ def render(final, excluded, summary, refresh_errors, index_final=None, index_exc
     for key, names in (index_excluded or {}).items():
         if names:
             L.append(f"- *{key}:* {', '.join(names)}")
-    L += ["", "## NIFTY 50 stocks", ""]
+    L += ["", "## NIFTY 50 stocks — information only, not traded (Stage 8n)", ""]
 
     L += [
         f"**{summary['selected']} of {summary['screened']} screened** — "
@@ -237,7 +237,7 @@ def render_compact(final, excluded, summary, index_final=None, risk=None):
             L.append(f"  {r['symbol']:<11} {struct:<10} {int(r['trend_age_days']):>3}d  spot "
                      f"{r['spot']:,.1f}  SL {r['flip_level']:,.1f}  buffer {r['buffer_to_flip_pct']:.1f}%")
             L.append(_compact_spread(r))
-    L += ["", f"  NIFTY 50 STOCKS   {summary['up']} bull put / {summary['down']} bear call"
+    L += ["", f"  NIFTY 50 STOCKS (information only, not traded)   {summary['up']} bull put / {summary['down']} bear call"
               f"   beta {summary['mean_beta_up']} UP vs {summary['mean_beta_down']} DOWN", ""]
     if summary["down"] != summary["up"]:
         L += ["  ** NOT BALANCED — too few DOWN candidates survived; "
@@ -292,8 +292,7 @@ def main():
         kite = get_kite()
         index_final = add_spreads(kite, index_final, set(INDEX_UNIVERSE))
         final = add_spreads(kite, final, set(INDEX_UNIVERSE))
-        both = pd.concat([index_final, final], ignore_index=True)
-        risk = risk_summary(both)
+        risk = risk_summary(index_final)          # the traded book = indices
         try:
             risk.update(vix_context(kite))
         except Exception as e:
@@ -322,8 +321,9 @@ def main():
     if not args.no_refresh:
         from src.auth import get_kite
         from src.credit_spread_journal import run_journal
-        journal, logged, problems = run_journal(kite, pd.concat([index_final, final], ignore_index=True),
-                                                already_refreshed=symbols)
+        # Index trades only (TRADING_RULES.md / Stage 8n): stocks are shown for
+        # information but are not part of the traded system.
+        journal, logged, problems = run_journal(kite, index_final, already_refreshed=symbols)
         n_open = int((journal["status"] == "OPEN").sum())
         print(f"\n  journal: {len(logged)} new trade(s) logged"
               f"{' (' + ', '.join(logged) + ')' if logged else ''}, {n_open} open"

@@ -1,3 +1,5 @@
+> **Current best system and the scoreboard of what was tested: [TRADING_RULES.md](TRADING_RULES.md).**
+
 ## Setup
 1. Activate venv: `source .venv/bin/activate`
 2. Install deps: `pip install kiteconnect pandas pandas_ta jupyter openpyxl`
@@ -611,6 +613,216 @@
 - [x] **Conclusion: no tested signal says "IC this month"; the directional credit
       spread is the better default for NIFTY.** Short IC timing stays unsolved (Stage 6)
       — VIX + ADX did not crack it. Real premiums (IV recorder) are the remaining route.
+
+### Stage 8n — ₹10L book: indices only vs indices + NIFTY 50 stocks (modelled) ✅
+- [x] `src/portfolio_compare_test.py`, Jan 2023 – Oct 2026. Same live rules for both
+      books: 4H Supertrend 10,3, stop at the flip / monthly expiry; indices (NIFTY,
+      BANKNIFTY) 3% strike + 200-pt hedge, no ADX; stocks 6% strike, hedge 2% of spot,
+      ADX > 20; list filters replayed walk-forward (edge from flips closed BEFORE
+      entry, crash-born, buffer ≥ 1.5%); lots by ₹20k max loss per trade; total open
+      max loss ≤ ₹80k (8%); Black-Scholes with VIX-based vol; costs ₹150/lot at SL,
+      ₹75 at expiry. Sector cap / 50-50 / ranking not replayed.
+- [x] **Stock option pricing decides the answer, so it was calibrated live.**
+      29 Oct 2026, 100 contracts (6% OTM CE + PE on all 50 stocks): real IV was 0.81×
+      the model's proxy (puts 0.85, calls 0.76).
+
+      | | Index only | + stocks, proxy IV | + stocks, IV × 0.81 (live-calibrated) | + stocks, IV × 1.25 |
+      |---|---|---|---|---|
+      | Total (₹) | +3,510 | −60,788 | **−2,21,707** | +1,75,238 |
+      | Per year, % of ₹10L | 0.0% | −1.6% | −6.0% | +5.0% |
+      | Losing months | 41% | 50% | 63% | 35% |
+      | Worst month | −₹20,812 | −₹53,751 | −₹60,147 | −₹32,574 |
+      | Max drawdown | **−₹35,112** | −₹1,47,034 | −₹2,33,483 | −₹62,568 |
+      | Trades | 185 | 485 | 502 | 474 |
+
+- [x] **Indices only was the steadier book: about flat, with a ₹35k worst drawdown.**
+      Adding stocks only wins if stock options are ~25% RICHER than the proxy. Live
+      quotes say they are ~19% CHEAPER, and at that level the stock book lost in every
+      year. Stock trades: ~₹15k max loss to collect ~₹3.6k, stopped out 53% of the time.
+      Stocks need 2-3× the risk budget for that. Consistent with Stage 8i (stocks lose
+      2-4× more per losing trade).
+- [x] **Re-run on the same ~5 years for both books** (native 4H, 2022-01 to 2026-10,
+      corrected Flips sheets, edge filter OFF as in production since Stage 8o;
+      `run(native=True, use_edge=False)`):
+
+      | | Index only | + stocks, IV ×0.81 (live) | + stocks, IV ×1.0 | + stocks, IV ×1.25 |
+      |---|---|---|---|---|
+      | Total (₹) | **+68,310** | −2,28,258 | −41,156 | +3,39,486 |
+      | Losing months | **34%** | 69% | 57% | 28% |
+      | Worst month | −₹21,496 | −₹45,173 | −₹50,090 | −₹19,069 |
+      | Max drawdown | **−₹34,187** | −₹2,81,117 | −₹1,22,373 | −₹26,734 |
+      | 2022 / 23 / 24 / 25 / 26 | +77k / −10k / −5k / −4k / +10k | +8k / −27k / −1.14L / −60k / −35k | | |
+
+      Same verdict: indices only is steadier and ahead unless stock options are ~25%
+      richer than the proxy, and live quotes say they are ~19% cheaper. Most of the
+      index book's profit is 2022 (strong trends, high VIX); 2023-26 is about flat.
+- [x] **Same comparison WITHOUT option prices** (Supertrend outcomes only, user's rule:
+      win = reached expiry or flip-back beyond entry; loss = underlying move at the
+      flip candle close; native 4H 2022-01 to 2026-10, same filters, no position cap):
+
+      | | Index only | Index + NIFTY 50 stocks |
+      |---|---|---|
+      | Trades (per month) | 247 (4.3) | 2,679 (46.6) |
+      | Win rate | 51.0% | 53.5% |
+      | Avg loss | **−1.73%** | −3.71% |
+      | Worst loss | **−6.6%** | −15.7% |
+      | Losses worse than −3% / −5% | **5.3% / 1.2%** of trades | 28.5% / 11.9% |
+      | Months with more losses than wins | 32.8% | 36.2% |
+      | Win rate 2022/23/24/25/26 | 66 / 47 / 48 / 45 / 51 | 57 / 55 / 52 / 49 / 54 |
+
+      Stocks win ~2.5 pts more often (better in 2023-25, worse in 2022) but lose 2.1×
+      as much per loss, and a big loss (> 3%) is 5× as common, every year. Which book
+      earns more depends on the credit kept per win, i.e. on premiums (the table above).
+- [x] Even the index book is only about break-even after costs in this model (Stage 8l).
+      What earns money has to come from real premiums richer than VIX, and the
+      journal is where that gets measured. One day's IV calibration; in-sample.
+
+### Stage 8o — BIAS FOUND AND FIXED: Flips-sheet exits were one candle early ✅
+- [x] `flip_analysis.py` sets a closed flip's `exit_price` to the close of the LAST
+      candle of the segment, i.e. the candle BEFORE the opposite flip. In real time the
+      flip is only known when the flip candle CLOSES, and that candle is usually
+      the one that crosses the stop. So every `pct_move` leaves out the move that
+      triggered the exit. The breach candle is probably also left out of
+      `max_adverse_pct` / gap / worst-day (the segment ends before it). Not yet confirmed.
+- [x] Size of it, from the saved Flips sheets (2022 – Oct 2026), real exit = next flip's
+      entry price (the flip candle close):
+
+      | Group | Sheet win % / avg move | Real (4H close) win % / avg move | Stop at the line* |
+      |---|---|---|---|
+      | NIFTY | 62.0% / +1.37% | **41.8% / +0.33%** | 49.4% / +0.77% |
+      | BANKNIFTY | 58.9% / +1.48% | **42.5% / +0.10%** | 50.7% / +0.63% |
+      | SENSEX | 62.0% / +1.41% | **44.3% / +0.33%** | 46.8% / +0.77% |
+      | NIFTY 50 stocks | 50.5% / +2.12% | **35.4% / −0.14%** | 41.0% / +0.84% |
+      | Other F&O stocks | 50.5% / +2.97% | **36.5% / +0.11%** | — |
+
+      *exit at `final_sl_at_breach`, only on candles that actually flipped. A real stop
+      order also fires on touch-and-revert candles, so this column is optimistic.
+      Median overstatement per flip: indices 0.8-1.1 pts, NIFTY 50 stocks 1.75, others 2.2.
+      Real win rate by year (4H close), NIFTY: 64 / 40 / 29 / 47 / 30% (2022-26);
+      indices beat NIFTY 50 stocks in every year. 2024 was the worst year for every group.
+- [x] **What it affects:** everything that reads the Flips sheet. That includes
+      `dir_win_rate` / `dir_median_move` and so the edge filter (MIN_WIN_RATE 50% was set
+      against inflated numbers), containment stats, the credit spread ranking, the `reason`
+      text on the list, and probably the 1D trend-following stages (10-10c), if
+      they use the same flip logic. **Not affected:** Stages 8g-8n, which simulate exits on
+      the flip candle close (`timeframe_indicator_test.simulate`). Their conclusions stand.
+- [x] **Fixed 2026-10-29** (user's go-ahead). `detect_flips` exits on the flip candle and
+      includes it in adverse / gap / worst-day; new columns `expiry`, `reached_expiry`,
+      `rule_trades`, `rule_wins` = the user's credit-spread rule, counted the way the
+      journal trades it (one trade per monthly cycle; a cycle reaching expiry wins; the
+      last cycle wins only if the flip-back is beyond its own entry). `_directional_edge`
+      win rate now uses that rule. All 219 4H and 225 1D reports rebuilt from saved
+      candles; rankings rebuilt (notebooks 05, 08, 11, 12). `monthly_expiries` moved into
+      `flip_analysis.py` and shared with the Stage 8g harness. NIFTY: 50.0% over 134
+      monthly trades (2022-26), in line with the simulations (47-51%).
+- [x] **Effect on the current universe (3 indices + NIFTY 50, 106 instrument-sides):**
+      average rule win rate 50.5% (flip-to-flip sheet number was 51.2%, real 4H-close
+      ~36-44%); `contained_6pct` 91.3 → 82.1%; **median flip-to-flip move is now
+      negative for almost every side (avg −1.9%)**. Wins come from cycles reaching
+      expiry, not from trends running far. The edge filter's second condition
+      (median move > 0) therefore fails almost everywhere: **3 of 106 sides pass, down
+      from 60**. Every index side lost its "edge".
+- [x] **Walk-forward: per-symbol edge does NOT persist** (all 219 instruments, 422
+      sides with ≥ 12 trades 2022-24 and ≥ 6 in 2025-26). Correlation of rule win rate
+      2022-24 vs 2025-26: −0.04 (Spearman −0.03). Top third in 2022-24 (60.3%) went on
+      to 48.8%, bottom third (46.7%) to 49.5%; "edge" sides (≥ 50%) 48.5% later vs
+      49.3% for the rest. Median-move persistence is weak (corr 0.14). **The Stage 8c
+      premise, "the signal works on some names and not others", is not supported once
+      exits are counted correctly.** The difference between names looks like noise.
+- [x] **Stage 10c (1D stop-loss) re-run on corrected reports: verdict unchanged.** No-SL
+      mean +4.73% beats every fixed / ATR / worst-day stop. The baseline changed:
+      win rate 41.9% (was 54.1%), median −2.03% (was +0.82%). 1D trend-following
+      makes its money from a few large winners, not a high win rate. The Stage 10b
+      DOWN-side "edge on 14% of instruments" figure came from the inflated sheet and
+      has not been re-derived.
+- [ ] Open: what the edge filter should become (user decision).
+
+### Stage 8p — Gold (GOLDBEES) vs NIFTY, 4H Supertrend, 2015-2026 ✅
+- [x] **Data.** MCX gold futures: intraday history only for listed contracts (~6 months);
+      Kite's continuous series is daily-only (`data/raw/GOLD_MCX_day_continuous.csv`).
+      So the 4H series is GOLDBEES (NSE gold ETF), 1H from Feb 2015 →
+      `GOLDBEES_60minute.csv` (raw), `GOLDBEES_60minute_clean.csv`, `GOLDBEES_4hour.csv`
+      (built from the cleaned 1H, 09:15 / 13:15 buckets). Tracks MCX gold: weekly
+      return corr 0.80; daily 0.47 only because MCX trades to 23:30.
+- [x] **Data cleaning.** The raw 1H 09:15 candle had stray opening prints, e.g. an open
+      18% off the previous close and then a close back near it, on 15-30% of sessions
+      since 2020. These distort ATR / Supertrend and every adverse figure. Cleaned on
+      the 09:15 candle only: an open > 1.5% off the previous close is reset to it when
+      the candle closes back (320 of 2,889 sessions); wicks are clipped at the 99th
+      percentile of other hours (0.45%). Remaining big gaps checked as real (Brexit
+      2016, the Jan-Mar 2026 swings). Better: rebuild from 5-min, which needs a live token.
+- [x] **Result** (user's rule, same filters and monthly cycle as the indices; NIFTY from
+      the 2015 1H series):
+
+      | | GOLDBEES | NIFTY |
+      |---|---|---|
+      | Trades | 292 | 311 |
+      | Win rate | 52.7% | 51.1% |
+      | Avg loss / worst loss | −1.72% / −5.9% | −1.78% / −5.6% |
+      | Losses > 3% / > 5% | 5.8% / 1.0% | 8.4% / 0.6% |
+      | Reached 3% / 4% against | 8.2% / 5.1% | 10.0% / 4.8% |
+      | UP win / DOWN win | 58.1% / 47.2% | 54.1% / 48.1% |
+      | Win rate 2023 / 24 / 25 / 26 | 59 / 60 / 46 / 50 | 52 / 40 / 43 / 50 |
+
+      Gold behaves like NIFTY on this signal: same win rate, same loss size, same strike
+      distances. It is not a stock-like risk. Its big-loss years are 2020, 2025 and
+      2026 (17-20% of trades losing > 3%), with very calm years in between.
+- [x] **Gold's bad months do not line up with NIFTY's.** 141 months: correlation of
+      monthly loss count 0.04, of monthly loss size −0.06. Of the worst fifth of months,
+      only 3 were bad for both (6 expected by chance). Unlike NIFTY + BANKNIFTY (one bet),
+      gold + NIFTY is real diversification for the signal.
+- [x] Not tested: MCX gold option premiums (no history), the MCX session's own 4H candles
+      (flips will differ from GOLDBEES's NSE-hours candles), MCX option expiry dates
+      (the NSE monthly cycle was used here as an approximation).
+
+### Stage 8q — Supertrend vs plain monthly put spread; profit-taking at 50% — tested ✅
+- [x] `src/baseline_pt_test.py`. NIFTY, Feb 2015 – Oct 2026 (1H → 4H), 1 lot, 3% strike,
+      200-pt hedge, Black-Scholes at prior-day India VIX (no skew), costs ₹53 entry +
+      ₹50 per early exit, slippage beyond mid NOT included. Fixed before running:
+      A = production 4H Supertrend spread (stop at the flip, expiry, roll at cycle
+      start); B = sell a 3% put spread at the first 4H close of every cycle, hold to
+      expiry, no signal. Profit-take: exit when the spread is worth 50% of the credit
+      (primary); 25% / 75% captured only as a sensitivity check. Flat after a profit-take
+      until the next flip / cycle.
+
+      | 1 lot, 2015-26 | Trades | Win % | Avg win | Avg loss | Worst trade | Total | Losing months | Max drawdown |
+      |---|---|---|---|---|---|---|---|---|
+      | **A Supertrend (hold)** | 323 | 58.5 | ₹1,291 | −₹1,413 | −₹6,447 | **+₹54,612** | 30.5% | **−₹19,530** |
+      | A + take profit 50% | 323 | 61.9 | ₹921 | −₹1,443 | −₹6,447 | +₹6,760 | 36.2% | −₹25,361 |
+      | A + take profit 75% | 323 | 57.9 | ₹1,178 | −₹1,360 | −₹6,447 | +₹35,398 | 31.9% | −₹21,700 |
+      | **B plain put spread (hold)** | 141 | 84.4 | ₹1,923 | −₹9,068 | −₹12,054 | +₹29,344 | **15.6%** | −₹37,821 |
+      | B + take profit 50% | 141 | 92.2 | ₹1,112 | −₹11,220 | −₹12,054 | +₹21,186 | 7.8% | −₹48,460 |
+      | B + take profit 75% | 141 | 89.4 | ₹1,520 | −₹9,907 | −₹12,054 | +₹42,943 | 10.6% | −₹41,998 |
+
+      Halves (total ₹): A hold +21,856 (2015-21) / +32,756 (2022-26); B hold +23,873 /
+      +5,471. With ₹100 extra slippage per trade: A +22,312, B +15,244.
+- [x] **The Supertrend timing adds value, mostly as loss control.** Over 11 years A made
+      ~1.9× B with half the drawdown and half the worst trade. B wins more often (84%)
+      but its losers are near max loss (avg −₹9,068; the stop is what keeps A's at
+      −₹1,413). Not a clean sweep: B was slightly ahead in 2015-21, and A's lead is
+      mostly 2022-26. After realistic slippage the gap narrows (A trades 2.3× as often).
+- [x] **Profit-taking at 50%: REJECTED for both.** A: +₹54.6k → +₹6.8k; B: +₹29.3k →
+      +₹21.2k with a deeper drawdown. It cuts the winners (avg win ₹1,291 → ₹921) but
+      leaves the losers untouched, and adds exit costs. 25% is worse still. 75% helps B
+      (+₹42.9k) but hurts A, and was not the primary level: not adopted on one
+      sensitivity row. Hold-to-expiry / stop stays.
+- [x] **Absolute level:** A is about +₹4,600 / lot / year before slippage, about +₹1,900
+      after. That is positive, but thin (Stages 8l, 8n agree).
+
+### Stage 8r — Best combination adopted into the screener; TRADING_RULES.md ✅
+- [x] **`TRADING_RULES.md` (repo root)** now holds the current best system and the
+      scoreboard of everything tested (Stages 8g-8q). Update it whenever a test
+      beats an entry.
+- [x] **Screener changes (2026-10-29, user's go-ahead):**
+      - index short strike = first listed strike at or beyond **3%** from spot
+        (`spread_builder.INDEX_STRIKE_PCT`). This replaces "farthest strike paying 1.5% on
+        margin" (Stage 8k), which landed ~5% out where costs ate the credit (8l)
+      - traded universe = **NIFTY, BANKNIFTY**. SENSEX dropped (negative in 8l; moves
+        with NIFTY). NIFTY 50 stocks still shown, labelled information only
+      - journal logs **index trades only**; the book's risk line counts indices only.
+        Already-open stock and SENSEX trades keep being tracked to their exit.
+- [x] Verified offline against a synthetic chain (token expired): NIFTY 22,700 → DOWN
+      23,400/23,600 CE, UP 22,000/21,800 PE (both 3.08% out).
 
 ### Stage 9 — Debit spread signal (EMA/ADX, 1H) — in progress
 - [x] `src/ema_adx_signal.py` — NEW module, parallel to `flip_analysis.py` not a

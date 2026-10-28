@@ -35,6 +35,7 @@ import pandas as pd
 import pandas_ta as ta
 
 from src.black_scholes import bs_price, RISK_FREE_RATE
+from src.flip_analysis import monthly_expiries   # shared NSE expiry calendar
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW_DIR = os.path.join(PROJECT_ROOT, "data", "raw")
@@ -134,31 +135,6 @@ SYSTEMS = {
 
 
 # ---------------------------------------------------------------- expiries
-def monthly_expiries(trading_days):
-    """
-    NSE monthly expiry: last Thursday of the month up to Aug 2025, last Tuesday
-    from Sep 2025 (NSE's expiry-day change). A holiday moves it to the previous
-    trading day - derived from the days that actually have candles.
-    """
-    days = sorted(set(trading_days))
-    day_set = set(days)
-    out = []
-    y, m = days[0].year, days[0].month
-    last_y, last_m = days[-1].year, days[-1].month
-    stop = (last_y + 1, 1) if last_m == 12 else (last_y, last_m + 1)   # one month past the data
-    while (y, m) <= stop:
-        last = (date(y + m // 12, m % 12 + 1, 1) - timedelta(days=1))
-        weekday = 1 if (y, m) >= (2025, 9) else 3
-        d = last
-        while d.weekday() != weekday:
-            d -= timedelta(days=1)
-        while d not in day_set and d > days[0] and d <= days[-1]:
-            d -= timedelta(days=1)
-        out.append(d)
-        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
-    return out
-
-
 def _realized_vol(symbol):
     d = pd.read_csv(os.path.join(RAW_DIR, f"{symbol}_day.csv"))
     d.index = pd.to_datetime(d["date"].astype(str).str[:10])

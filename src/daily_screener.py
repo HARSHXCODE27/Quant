@@ -77,9 +77,18 @@ def _directional_edge(flips, direction):
     adverse = same["max_adverse_pct"].dropna()
     duration = _duration_to_days(same["duration"].dropna())
 
+    # Win rate = the user's credit-spread rule (flip_analysis rule_trades /
+    # rule_wins: a monthly cycle that reaches expiry wins; a flip-back wins
+    # only beyond entry). Reports built before Stage 8o lack the columns and
+    # fall back to flip-to-flip moves.
+    if "rule_trades" in same and same["rule_trades"].notna().all():
+        win_rate = same["rule_wins"].sum() / same["rule_trades"].sum() * 100
+    else:
+        win_rate = (move > 0).mean() * 100
+
     out = {
         "n": len(same),
-        "win_rate": round((move > 0).mean() * 100, 1),
+        "win_rate": round(win_rate, 1),
         "median_move": round(move.median(), 2),
         "contained_5pct": round((adverse <= 5).mean() * 100, 1),
         "contained_6pct": round((adverse <= 6).mean() * 100, 1),

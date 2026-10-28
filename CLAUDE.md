@@ -11,6 +11,7 @@ why. Before proposing anything, check whether it was already tried:
 
 | Looking for | Read |
 |---|---|
+| **The current best system + scoreboard of everything tested** | **`TRADING_RULES.md`** |
 | Credit spread strategy, current state | Stages 6, 7, 8b–8f |
 | Other timeframes / indicators vs 4H Supertrend (tested); ADX>20 entry filter (adopted) | Stage 8g |
 | Intraday setups (ORB, VWAP, gaps, 5m/15m indicators) — tested, rejected | Stage 8h |
@@ -18,6 +19,10 @@ why. Before proposing anything, check whether it was already tried:
 | India VIX regime vs premium (high VIX was worse) | Stage 8j |
 | Index-first universe, live spreads, sizing by max loss | Stage 8k |
 | NIFTY regime: iron condor vs credit spread (rejected) | Stage 8m |
+| ₹10L book: indices only vs indices + stocks | Stage 8n |
+| Gold (GOLDBEES 4H) vs NIFTY, data cleaning | Stage 8p |
+| Supertrend vs plain monthly put spread; profit-take 50% (rejected) | Stage 8q |
+| Best combination adopted into the screener | Stage 8r |
 | Directional edge / no-edge detection | Stage 8c |
 | Single-day move risk, the PIIND incident | Stage 8d |
 | The go-to entry list, market context | Stage 8e |
@@ -35,6 +40,13 @@ just the diff.
 
 ## How the user works
 
+- **Every test ends with a scoreboard report.** When any new test is run, tell the
+  user (1) exactly what was tested (setup, period, data, rules fixed beforehand),
+  (2) the results, and (3) how they compare with the current best in
+  `TRADING_RULES.md`: better, worse, or inconclusive, and whether the best system
+  changes. If it wins (and survives a holdout or robustness check), update
+  `TRADING_RULES.md` and the screener; either way add a README stage.
+
 **Evidence standard is the defining constraint.** This project holds itself to
 "tested, not assumed", and documents honest negative results as first-class
 findings. Several plausible ideas were built, tested, and thrown away.
@@ -45,13 +57,11 @@ findings. Several plausible ideas were built, tested, and thrown away.
   regression, not a feature.
 - **Say when something is unvalidated.** Everything in the screener is in-sample
   and descriptive. Label it that way.
-- **The signal does not work everywhere — check before acting on a flip.**
-  Both the 4H credit-spread screener and the 1D trend-following screener now
-  report per-direction edge, because in both universes a large share of
-  instruments have no historical edge on the side that is currently open (1D
-  trend-following: DOWN flips showed an edge on only 14% of instruments on
-  the original 154-symbol universe). A flip is not self-evidently actionable.
-  See Stages 8c and 10b.
+- **Per-instrument "edge" is display-only (Stage 8o).** Once flip exits were counted
+  correctly, a side's win rate in 2022-24 did not predict 2025-26 (corr −0.04 over
+  422 sides), so the edge filter no longer excludes names. Instrument CHOICE is
+  settled at group level instead (indices vs stocks, Stages 8i/8n), not per name.
+  Re-test before bringing a per-name filter back.
 - **Negative results get written down.** If something is tested and fails, record
   it in the README so it isn't re-proposed later.
 - The user reads the final list and acts; they do not want to re-derive the
@@ -87,6 +97,11 @@ findings. Several plausible ideas were built, tested, and thrown away.
 
 ## Traps that have actually bitten
 
+- **Flips-sheet exit was one candle early (Stage 8o, fixed 2026-10-29).** Any
+  report or number from before that date (README stages, old xlsx in git
+  history) overstates win rates by 15-20 pts. Per-symbol edge was also found
+  NOT to persist walk-forward (corr −0.04). Don't lean on it.
+
 - **numpy bool identity.** `numpy.bool_(True) is True` is `False`. Any `is True` /
   `is False` check against a pandas-derived value silently never fires. This has
   caused two separate silent failures. Cast with `bool()`.
@@ -111,7 +126,7 @@ src/       flip_analysis, supertrend, summary_stats, monthly_range  (core)
            strategy_scoring        per-strategy rankings
            daily_screener          directional edge + tradeable/watchlist/no_edge
            market_context          buffer-to-flip, beta, sector, realized_vol_rank
-           entry_advisor           the final lists: indices + NIFTY 50 stocks (Stage 8k)
+           entry_advisor           the final lists: NIFTY/BANKNIFTY traded, NIFTY 50 stocks info only (8k, 8r)
            spread_builder          live strikes, credit, margin, lots by max loss (read-only)
            black_scholes           BS pricer + implied_vol solver
            iv_recorder             daily forward ATM-IV snapshot (Stage 8f)

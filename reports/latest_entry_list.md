@@ -1,74 +1,59 @@
-# Entry list — 2026-10-28 19:54
-
-**Book if all taken:** max loss ₹77,578 (7.8% of capital) · credit ₹8,422 · margin ₹406,269 (40.6%) · 5 position(s)
-
-**India VIX 16.2 — 76th percentile of the past year (HIGH)** — in the top third, index trades broke VIX's implied range 2.4× as often and lost more (Stage 8j). Context, not a filter.
+# Entry list — 2026-10-29 04:56
 
 ## Indices
 
-> ⚠ All index picks point the same way — they move together, so this is ONE bet sized as several. Consider taking only one.
-
 ### BANKNIFTY — BEAR CALL
 
-- **Sell 57,100 CE / buy 57,300 CE**, exp 2026-11-23 (26d) · 5.22% OTM · credit 20.0 (bid/ask) · 3 lot(s) × 30 · max loss ₹16,200 · credit ₹1,800 · margin ₹109,593 · return on margin 1.64%
-  - strikes this far were reached 2.9% of the time (Stage 8i)
-- BEAR CALL — trend is DOWN, sell calls above. Flip is 5d old vs a 20.2d median. DOWN flips here win 52.8% with a +0.87% median move (36 samples). 97.2% of them stayed inside 6% (worst 7.15%). Worst gap 3.73%, worst single day 3.96%. 72.2% resolved within 30d. Spot 54267.4 sits 2.33% from the 55534.12 flip level. Trend is slightly underwater (-0.50% since flip). ADX 17.7 at the flip (> 20 required). Beta 1.11. Realized vol 11.6% (annualized), in its normal range vs its own 2yr history (42.0th pct — proxy only, not IV, no established threshold yet).
-
-### SENSEX — BEAR CALL
-
-- **Sell 74,000 CE / buy 74,200 CE**, exp 2026-10-29 (1d) · 1.03% OTM · credit 30.7 (last traded (book empty)) · 5 lot(s) × 20 · max loss ₹16,930 · credit ₹3,070 · margin ₹163,845 · return on margin 1.87%
-  - strikes this far were reached 23.2% of the time (Stage 8i)
-  - strike is CLOSER than the Supertrend stop — price can reach it before the stop fires
-  - expires in 1 days
-- BEAR CALL — trend is DOWN, sell calls above. Flip is 5d old vs a 16.0d median. DOWN flips here win 56.4% with a +0.66% median move (39 samples). 100.0% of them stayed inside 6% (worst 5.55%). Worst gap 2.31%, worst single day 3.24%. 79.5% resolved within 30d. Spot 73246.03 sits 2.26% from the 74898.33 flip level. Trend is slightly underwater (-0.96% since flip). ADX 20.9 at the flip (> 20 required). Beta 1.01. Realized vol 14.7% (annualized), elevated vs its own 2yr history (76.2th pct — proxy only, not IV, no established threshold yet).
+- *Spread not priced (run with a live token)*
+- BEAR CALL — trend is DOWN, sell calls above. Flip is 5d old vs a 21.0d median. DOWN trades here won 48.3% under the stop/expiry rule over 36 flips (does not predict the next one - Stage 8o); median flip-to-flip move -0.62%. 94.4% of them stayed inside 6% (worst 8.4%). Worst gap 4.79%, worst single day 5.79%. 72.2% resolved within 30d. Spot 54267.4 sits 2.33% from the 55534.12 flip level. Trend is slightly underwater (-0.50% since flip). ADX 17.7 at the flip (> 20 required). Beta 1.11. Realized vol 11.6% (annualized), in its normal range vs its own 2yr history (42.0th pct — proxy only, not IV, no established threshold yet).
 
 - *trend_underwater:* NIFTY
 
-## NIFTY 50 stocks
+## NIFTY 50 stocks — information only, not traded (Stage 8n)
 
-**5 of 28 screened** — 5 bull put / 0 bear call.
-Sectors: AUTO, BANK, CONSUMER, HEALTHCARE, TELECOM. Mean beta 0.87 UP vs nan DOWN.
-Candidate supply after filters: 5 UP / 0 DOWN.
+**6 of 14 screened** — 5 bull put / 1 bear call.
+Sectors: AUTO, BANK, CEMENT, HEALTHCARE, NBFC, TELECOM. Mean beta 0.85 UP vs 1.32 DOWN.
+Candidate supply after filters: 5 UP / 1 DOWN.
 
 > ⚠ Book is not balanced — not enough DOWN-side candidates survived the filters. Consider trading fewer positions rather than forcing in a weak bear call.
 
-### BHARTIARTL — BULL PUT  ·  score 70.0  ·  TELECOM
+### BAJAJFINSV — BEAR CALL  ·  score 13.3  ·  NBFC
 
-- **Sell 1,820 PE / buy 1,780 PE**, exp 2026-11-23 (26d) · 6.91% OTM · credit 3.3 (bid/ask) · 1 lot(s) × 475 · max loss ₹17,432 · credit ₹1,568 · margin ₹47,501 · return on margin 3.3%
-- BULL PUT — trend is UP, sell puts below. Flip is 22d old vs a 19.7d median. UP flips here win 59.4% with a +1.27% median move (32 samples). 96.9% of them stayed inside 6% (worst 6.29%). Worst gap 2.44%, worst single day 3.39%. 59.4% resolved within 30d. Spot 1955.2 sits 4.17% from the 1873.65 flip level. Trend is working (+9.01% since flip). ADX 38.1 at the flip (> 20 required). Beta 0.67. Realized vol 27.2% (annualized), elevated vs its own 2yr history (90.8th pct — proxy only, not IV, no established threshold yet).
+- *Spread not priced (run with a live token)*
+- BEAR CALL — trend is DOWN, sell calls above. Flip is 82d old vs a 19.0d median. DOWN trades here won 50.0% under the stop/expiry rule over 29 flips (does not predict the next one - Stage 8o); median flip-to-flip move -2.75%. 79.3% of them stayed inside 6% (worst 9.45%). Worst gap 4.43%, worst single day 7.8%. 58.6% resolved within 30d. Spot 1655.0 sits 4.5% from the 1729.45 flip level. Trend is working (+16.96% since flip). ADX 39.2 at the flip (> 20 required). Beta 1.32. Realized vol 20.6% (annualized), in its normal range vs its own 2yr history (39.2th pct — proxy only, not IV, no established threshold yet).
 
-### ICICIBANK — BULL PUT  ·  score 69.0  ·  BANK
+### ULTRACEMCO — BULL PUT  ·  score 73.3  ·  CEMENT
 
-- **Sell 1,290 PE / buy 1,270 PE**, exp 2026-11-23 (26d) · 6.41% OTM · credit 1.35 (bid/ask) · 1 lot(s) × 700 · max loss ₹13,055 · credit ₹945 · margin ₹45,805 · return on margin 2.06%
-- BULL PUT — trend is UP, sell puts below. Flip is 22d old vs a 20.5d median. UP flips here win 55.6% with a +0.48% median move (36 samples). 100.0% of them stayed inside 6% (worst 5.22%). Worst gap 2.95%, worst single day 3.13%. 72.2% resolved within 30d. Spot 1378.3 sits 2.33% from the 1346.24 flip level. Trend is working (+2.84% since flip). ADX 30.1 at the flip (> 20 required). Beta 0.91. Realized vol 19.3% (annualized), in its normal range vs its own 2yr history (66.2th pct — proxy only, not IV, no established threshold yet).
+- *Spread not priced (run with a live token)*
+- BULL PUT — trend is UP, sell puts below. Flip is 12d old vs a 20.1d median. UP trades here won 57.1% under the stop/expiry rule over 35 flips (does not predict the next one - Stage 8o); median flip-to-flip move -1.02%. 94.3% of them stayed inside 6% (worst 7.21%). Worst gap 3.61%, worst single day 4.32%. 57.1% resolved within 30d. Spot 11180.0 sits 4.35% from the 10693.36 flip level. Trend is working (+2.17% since flip). ADX 27.6 at the flip (> 20 required). Beta 1.24. Realized vol 24.7% (annualized), elevated vs its own 2yr history (80.0th pct — proxy only, not IV, no established threshold yet).
 
-### TRENT — BULL PUT  ·  score 48.0  ·  CONSUMER
+### BHARTIARTL — BULL PUT  ·  score 63.3  ·  TELECOM
 
-- **Sell 2,650 PE / buy 2,550 PE**, exp 2026-11-23 (26d) · 8.55% OTM · credit 10.45 (bid/ask) · 0 lot(s) × 225 · max loss ₹0 · credit ₹0 · margin ₹0 · return on margin 5.92%
-  - one lot's max loss ₹20,149 is over the cap — skip
-- BULL PUT — trend is UP, sell puts below. Flip is 0d old vs a 19.6d median. UP flips here win 69.0% with a +3.43% median move (29 samples). 79.3% of them stayed inside 6% (worst 11.09%). Worst gap 2.85%, worst single day 8.36%. 69.0% resolved within 30d. Spot 2897.8 sits 6.07% from the 2721.98 flip level. Trend is working (+0.72% since flip). ADX 26.4 at the flip (> 20 required). Beta 1.3. Realized vol 48.5% (annualized), elevated vs its own 2yr history (80.2th pct — proxy only, not IV, no established threshold yet).
+- *Spread not priced (run with a live token)*
+- BULL PUT — trend is UP, sell puts below. Flip is 22d old vs a 21.0d median. UP trades here won 56.2% under the stop/expiry rule over 32 flips (does not predict the next one - Stage 8o); median flip-to-flip move -0.68%. 93.8% of them stayed inside 6% (worst 11.64%). Worst gap 2.74%, worst single day 7.72%. 59.4% resolved within 30d. Spot 1955.2 sits 4.17% from the 1873.65 flip level. Trend is working (+9.01% since flip). ADX 38.1 at the flip (> 20 required). Beta 0.67. Realized vol 27.2% (annualized), elevated vs its own 2yr history (90.8th pct — proxy only, not IV, no established threshold yet).
 
-### APOLLOHOSP — BULL PUT  ·  score 37.0  ·  HEALTHCARE
+### ICICIBANK — BULL PUT  ·  score 61.7  ·  BANK
 
-- **Sell 7,600 PE / buy 7,400 PE**, exp 2026-11-23 (26d) · 6.73% OTM · credit 24.9 (bid/ask) · 0 lot(s) × 125 · max loss ₹0 · credit ₹0 · margin ₹0 · return on margin 5.25%
-  - one lot's max loss ₹21,888 is over the cap — skip
-- BULL PUT — trend is UP, sell puts below. Flip is 0d old vs a 19.5d median. UP flips here win 52.9% with a +0.28% median move (34 samples). 100.0% of them stayed inside 6% (worst 5.95%). Worst gap 4.34%, worst single day 5.19%. 61.8% resolved within 30d. Spot 8148.0 sits 6.34% from the 7631.24 flip level. Trend is working (+1.04% since flip). ADX 35.7 at the flip (> 20 required). Beta 0.54. Realized vol 39.0% (annualized), elevated vs its own 2yr history (100.0th pct — proxy only, not IV, no established threshold yet).
+- *Spread not priced (run with a live token)*
+- BULL PUT — trend is UP, sell puts below. Flip is 22d old vs a 21.0d median. UP trades here won 49.2% under the stop/expiry rule over 36 flips (does not predict the next one - Stage 8o); median flip-to-flip move -0.97%. 97.2% of them stayed inside 6% (worst 8.86%). Worst gap 2.98%, worst single day 6.52%. 72.2% resolved within 30d. Spot 1378.3 sits 2.33% from the 1346.24 flip level. Trend is working (+2.84% since flip). ADX 30.1 at the flip (> 20 required). Beta 0.91. Realized vol 19.3% (annualized), in its normal range vs its own 2yr history (66.2th pct — proxy only, not IV, no established threshold yet).
 
-### BAJAJ-AUTO — BULL PUT  ·  score 36.0  ·  AUTO
+### BAJAJ-AUTO — BULL PUT  ·  score 61.7  ·  AUTO
 
-- **Sell 9,700 PE / buy 9,500 PE**, exp 2026-11-23 (26d) · 7.61% OTM · credit 13.85 (bid/ask) · 1 lot(s) × 75 · max loss ₹13,961 · credit ₹1,039 · margin ₹39,525 · return on margin 2.63%
-- BULL PUT — trend is UP, sell puts below. Flip is 15d old vs a 16.2d median. UP flips here win 54.3% with a +0.39% median move (35 samples). 94.3% of them stayed inside 6% (worst 7.01%). Worst gap 3.22%, worst single day 4.9%. 74.3% resolved within 30d. Spot 10499.0 sits 4.82% from the 9993.33 flip level. Trend is working (+1.76% since flip). ADX 51.3 at the flip (> 20 required). Beta 0.91. Realized vol 38.6% (annualized), elevated vs its own 2yr history (96.0th pct — proxy only, not IV, no established threshold yet).
+- *Spread not priced (run with a live token)*
+- BULL PUT — trend is UP, sell puts below. Flip is 15d old vs a 17.5d median. UP trades here won 56.7% under the stop/expiry rule over 35 flips (does not predict the next one - Stage 8o); median flip-to-flip move -0.98%. 88.6% of them stayed inside 6% (worst 7.65%). Worst gap 3.22%, worst single day 4.93%. 65.7% resolved within 30d. Spot 10499.0 sits 4.82% from the 9993.33 flip level. Trend is working (+1.76% since flip). ADX 51.3 at the flip (> 20 required). Beta 0.91. Realized vol 38.6% (annualized), elevated vs its own 2yr history (96.0th pct — proxy only, not IV, no established threshold yet).
+
+### APOLLOHOSP — BULL PUT  ·  score 36.7  ·  HEALTHCARE
+
+- *Spread not priced (run with a live token)*
+- BULL PUT — trend is UP, sell puts below. Flip is 0d old vs a 20.0d median. UP trades here won 54.5% under the stop/expiry rule over 34 flips (does not predict the next one - Stage 8o); median flip-to-flip move -2.04%. 82.4% of them stayed inside 6% (worst 10.47%). Worst gap 4.34%, worst single day 5.79%. 61.8% resolved within 30d. Spot 8148.0 sits 6.34% from the 7631.24 flip level. Trend is working (+1.04% since flip). ADX 35.7 at the flip (> 20 required). Beta 0.54. Realized vol 39.0% (annualized), elevated vs its own 2yr history (100.0th pct — proxy only, not IV, no established threshold yet).
 
 ---
 
 ## Excluded (considered and rejected)
 
-- **No edge either side — signal never worked on this stock:** GRASIM, CIPLA, HINDUNILVR, RELIANCE
-- **Wrong side — other direction is the stronger one:** NESTLEIND, SUNPHARMA, ULTRACEMCO, BAJAJFINSV, KOTAKBANK, AXISBANK, EICHERMOT, NTPC, ADANIPORTS, COALINDIA
-- **Flip born on an outlier day — stats do not describe it:** HCLTECH, TCS
-- **Too close to invalidating the trend:** TITAN
-- **Trend already running against its own entry:** ITC
-- **Weak trend at the flip — ADX(14) not above 20:** DRREDDY, TECHM, HDFCBANK, JSWSTEEL, LT
+- **Flip born on an outlier day — stats do not describe it:** NESTLEIND
+- **Too close to invalidating the trend:** TITAN, EICHERMOT
+- **Weak trend at the flip — ADX(14) not above 20:** DRREDDY, GRASIM, HINDUNILVR, JSWSTEEL, LT
 
 ---
 

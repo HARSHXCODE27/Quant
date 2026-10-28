@@ -12,12 +12,11 @@
 # Liquidity is deliberately NOT scored or flagged — handled manually.
 #
 # The filter chain, in order, and why each exists:
-#   1. no edge either side  - the signal has never worked on this stock in
-#      either direction. The pooled ranking cannot see this because it scores
-#      only containment; ALKEM/GRASIM/KOTAKBANK all scored well while being
-#      wrong both ways.
-#   2. wrong side           - the open direction is the stock's weak half.
-#      Freshness is worth nothing when the signal has no edge on that name.
+#   1-2. directional edge (no edge either side / wrong side) - DISPLAY ONLY
+#      since 2026-10-29 (user's decision, README Stage 8o). Once flip exits were
+#      counted correctly, a side's win rate in 2022-24 did not predict 2025-26
+#      (corr -0.04 over 422 sides), so excluding on it removed names at random.
+#      edge_flag and dir_win_rate stay on every row for information.
 #   3. crash-born flip      - the flip was created by an outlier day, so the
 #      containment stats (drawn from ordinary flips) do not describe it. PIIND
 #      topped a shortlist on a flip born from a -8.97% fall.
@@ -35,8 +34,9 @@
 #   7. sector cap           - the concentration gap the README flags as unbuilt.
 #   8. 50/50 direction      - so a market-wide shock cannot hit every position.
 #
-# UNIVERSE (2026-10-28, user's decision, backed by Stage 8i): indices first -
-# NIFTY, BANKNIFTY, SENSEX - then NIFTY 50 stocks only. The other ~160 F&O
+# UNIVERSE (2026-10-28, user's decision, backed by Stage 8i; narrowed 2026-10-29
+# per TRADING_RULES.md): NIFTY and BANKNIFTY are the traded list; NIFTY 50
+# stocks are shown for information only. The other ~160 F&O
 # stocks reached a 6% strike on a fifth of trades and moved >5% in a day ~26
 # times in four years. Indices get their own list (build_index_list): same
 # filters 1-5, but NOT the ADX filter - on indices it raised the win rate but
@@ -51,7 +51,7 @@ import pandas_ta as ta
 
 from src.supertrend import load_raw_data
 
-from src.daily_screener import screen_list, split_by_edge, rank_setups
+from src.daily_screener import screen_list, rank_setups
 from src.market_context import enrich
 
 MIN_BUFFER_TO_FLIP_PCT = 1.5   # ~1.5 ordinary sessions of room before invalidation
@@ -60,7 +60,10 @@ MAX_PER_SECTOR = 1
 MIN_ADX_AT_FLIP = 20.0   # standard trend-strength reading, not tuned (Stage 8g)
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INDEX_UNIVERSE = ["NIFTY", "BANKNIFTY", "SENSEX"]
+# SENSEX dropped 2026-10-29: negative at every strike distance (Stage 8l) and
+# moves with NIFTY anyway. Stocks stay on the list for INFORMATION only; the
+# journal logs index trades only (Stage 8n). See TRADING_RULES.md.
+INDEX_UNIVERSE = ["NIFTY", "BANKNIFTY"]
 NIFTY50_LIST = os.path.join(PROJECT_ROOT, "config", "nifty50.csv")   # NSE ind_nifty50list.csv
 RANKING = os.path.join(PROJECT_ROOT, "exports", "RANKING_credit_spreads.xlsx")
 
@@ -105,8 +108,9 @@ def _reason(row):
     bits = [
         f"{structure} — {thesis}.",
         f"Flip is {int(row['trend_age_days'])}d old vs a {row['median_duration']}d median.",
-        f"{row['direction']} flips here win {row['dir_win_rate']}% "
-        f"with a {row['dir_median_move']:+.2f}% median move ({int(row['dir_flips'])} samples).",
+        f"{row['direction']} trades here won {row['dir_win_rate']}% under the stop/expiry rule "
+        f"over {int(row['dir_flips'])} flips (does not predict the next one - Stage 8o); "
+        f"median flip-to-flip move {row['dir_median_move']:+.2f}%.",
         f"{row['contained_6pct']}% of them stayed inside 6% "
         f"(worst {row['worst_adverse']}%).",
         f"Worst gap {row['worst_gap']}%, worst single day {row['worst_day']}%.",
@@ -149,14 +153,8 @@ def _suggest_strike(row):
 def _filter_chain(symbols, min_buffer, min_moved, use_adx):
     """Filters 1-6. Returns (status, surviving pool, excluded)."""
     status = enrich(screen_list(symbols))
-    tradeable, watchlist, no_edge = split_by_edge(status)
-
-    excluded = {
-        "no_edge_either_side": no_edge["symbol"].tolist(),
-        "wrong_side_watchlist": watchlist["symbol"].tolist(),
-    }
-
-    pool = tradeable.copy()
+    excluded = {}
+    pool = status.copy()      # edge is shown, not filtered on (header, 1-2)
 
     outlier = pool["born_on_outlier_day"].fillna(False).astype(bool)
     excluded["crash_born_flip"] = pool[outlier]["symbol"].tolist()

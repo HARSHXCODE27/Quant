@@ -8,9 +8,10 @@
 #   - capital ₹10L, max loss per trade 1-2% of it (MAX_LOSS_PCT is the cap)
 #   - hedge: skip one liquid strike and buy the next (sold 1240 CE, skipped
 #     1260, bought 1280) -> long = short +/- 2 strike steps
-#   - indices: pick the short strike by premium - the one whose credit is a
-#     ~1.5-2% return on the margin blocked. Implemented as the FARTHEST strike
-#     that still reaches TARGET_RETURN_PCT (farthest = safest that pays enough)
+#   - indices: short strike = first listed strike at or beyond 3% from spot
+#     (2026-10-29, TRADING_RULES.md). Replaced "farthest strike paying 1.5% on
+#     margin": that landed ~5% out, where costs ate the credit (Stage 8l: 3%
+#     netted +₹115/lot before costs vs +₹19 at 5%). Return on margin is still shown.
 #   - stocks: short strike stays the containment-based 6/7% (entry_advisor)
 #
 # "Return" = credit / margin blocked (Kite's own spread margin, hedge benefit
@@ -32,11 +33,10 @@ import pandas as pd
 
 CAPITAL = 10_00_000
 MAX_LOSS_PCT = 2.0                  # of CAPITAL, per trade (user: 1-2%)
-TARGET_RETURN_PCT = 1.5             # credit / margin, low end of the user's 1.5-2%
+INDEX_STRIKE_PCT = 3.0              # index short strike distance (Stage 8l)
 HEDGE_SKIP_STEPS = 2                # short +/- 2 steps: skip one, buy the next
 INDEX_STEP = {"NIFTY": 100, "BANKNIFTY": 100, "SENSEX": 100}   # liquid strike grid
 OPTION_EXCHANGE = {"SENSEX": "BFO"}                             # default NFO
-MAX_INDEX_DISTANCE_PCT = 10.0       # search window for the index short strike
 
 # Stage 8i: % of trades whose short strike at this distance was reached
 # (NIFTY + BANKNIFTY + SENSEX, 4H Supertrend 10,3, journal rules, 2023-26).
@@ -157,73 +157,29 @@ def build_spread(kite, row, chain, expiry, is_index):
     sign = -1 if up else 1              # OTM side: below spot for puts, above for calls
 
     if is_index:
-        otm = grid[(grid < spot) if up else (grid > spot)]
-        otm = otm[np.abs(otm - spot) / spot * 100 <= MAX_INDEX_DISTANCE_PCT]
-        far_to_near = otm if up else otm[::-1]        # farthest first
-        pairs = []
-        for k in far_to_near:
-            pos = np.searchsorted(grid, k)
-            j = pos + sign * HEDGE_SKIP_STEPS
-            if 0 <= j < len(grid):
-                pairs.append((k, grid[j]))
-        if not pairs:
-            return {"spread_problem": "no strikes in range"}
-        legs = c[c["strike"].isin({k for p in pairs for k in p})]
-        px = _prices(kite, legs)
-        priced = []
-        for short_k, long_k in pairs:
-            credit, basis = _credit(px, by_strike[short_k], by_strike[long_k])
-            if credit is not None and credit > 0:
-                priced.append((short_k, long_k, credit, basis))
-        if not priced:
-            return {"spread_problem": "no positive credit at any strike"}
-
-        # Return on margin rises as the strike moves toward spot, so binary-
-        # search for the farthest strike that reaches the target: ~6 margin
-        # calls instead of one per strike (SENSEX has ~75 in the window).
-        cache = {}
-
-        def ret(i):
-            if i not in cache:
-                s, l, cr, _ = priced[i]
-                m = _margin(kite, exchange, by_strike[s], by_strike[l], lot)
-                cache[i] = (cr * lot / m * 100, m)
-            return cache[i][0]
-
-        lo, hi = 0, len(priced) - 1
-        if ret(hi) < TARGET_RETURN_PCT:
-            return {"spread_problem": f"no strike within {MAX_INDEX_DISTANCE_PCT:g}% pays "
-                                      f"{TARGET_RETURN_PCT}% on margin (nearest: {ret(hi):.2f}%)"}
-        while lo < hi:
-            mid = (lo + hi) // 2
-            if ret(mid) >= TARGET_RETURN_PCT:
-                hi = mid
-            else:
-                lo = mid + 1
-        ret(lo)
-        short_k, long_k, credit, basis = priced[lo]
-        out = _sized(row, short_k, long_k, credit, basis, cache[lo][1], lot)
-        out["meets_target_return"] = out["return_on_margin_pct"] >= TARGET_RETURN_PCT
-        out["hist_strike_reach_pct"] = _reach_pct(out["strike_distance_pct"])
+        # first listed strike at or beyond INDEX_STRIKE_PCT from spot (Stage 8l)
+        target = spot * (1 + sign * INDEX_STRIKE_PCT / 100)
     else:
         target = row.get("short_strike")
         if target is None or pd.isna(target):
             return {"spread_problem": "no suggested strike"}
-        # first listed strike at or beyond the suggested one (further OTM)
-        beyond = grid[grid <= target] if up else grid[grid >= target]
-        if not len(beyond):
-            return {"spread_problem": "suggested strike outside the listed range"}
-        short_k = beyond.max() if up else beyond.min()
-        j = np.searchsorted(grid, short_k) + sign * HEDGE_SKIP_STEPS
-        if not 0 <= j < len(grid):
-            return {"spread_problem": "no hedge strike listed"}
-        long_k = grid[j]
-        legs = c[c["strike"].isin([short_k, long_k])]
-        credit, basis = _credit(_prices(kite, legs), by_strike[short_k], by_strike[long_k])
-        if credit is None or credit <= 0:
-            return {"spread_problem": f"no positive credit ({basis})"}
-        margin = _margin(kite, exchange, by_strike[short_k], by_strike[long_k], lot)
-        out = _sized(row, short_k, long_k, credit, basis, margin, lot)
+    # first listed strike at or beyond the target (further OTM)
+    beyond = grid[grid <= target] if up else grid[grid >= target]
+    if not len(beyond):
+        return {"spread_problem": "target strike outside the listed range"}
+    short_k = beyond.max() if up else beyond.min()
+    j = np.searchsorted(grid, short_k) + sign * HEDGE_SKIP_STEPS
+    if not 0 <= j < len(grid):
+        return {"spread_problem": "no hedge strike listed"}
+    long_k = grid[j]
+    legs = c[c["strike"].isin([short_k, long_k])]
+    credit, basis = _credit(_prices(kite, legs), by_strike[short_k], by_strike[long_k])
+    if credit is None or credit <= 0:
+        return {"spread_problem": f"no positive credit ({basis})"}
+    margin = _margin(kite, exchange, by_strike[short_k], by_strike[long_k], lot)
+    out = _sized(row, short_k, long_k, credit, basis, margin, lot)
+    if is_index:
+        out["hist_strike_reach_pct"] = _reach_pct(out["strike_distance_pct"])
 
     out.update(option_exchange=exchange, expiry=str(expiry),
                short_symbol=by_strike[out["short_strike"]],
