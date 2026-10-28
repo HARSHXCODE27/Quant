@@ -1627,3 +1627,171 @@ Traceback (most recent call last):
   File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/pandas/core/indexes/accessors.py", line 698, in __new__
     raise AttributeError("Can only use .dt accessor with datetimelike values")
 AttributeError: Can only use .dt accessor with datetimelike values
+
+--- WAAREEENER at 2026-10-27 14:43:22.388345 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 540, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 638, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 1478, in getresponse
+    response.begin()
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 847, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 510, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 540, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 638, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 1478, in getresponse
+    response.begin()
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/trend_1d_pipeline.py", line 229, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/trend_1d_pipeline.py", line 136, in process_instrument_incremental
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval=INTERVAL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 687, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 916, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 971, in _request
+    raise e
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 959, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 711, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+--- BAJAJ-AUTO at 2026-10-27 14:54:35.401584 ---
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 540, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 638, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 1478, in getresponse
+    response.begin()
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 847, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 510, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/util/util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 540, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 638, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 1478, in getresponse
+    response.begin()
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 343, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/http/client.py", line 312, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/trend_1d_pipeline.py", line 229, in run_all_instruments
+    process_instrument_incremental(symbol, token, kite, to_date)
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/trend_1d_pipeline.py", line 136, in process_instrument_incremental
+    new_df = fetch_historical_data(kite, token, fetch_from, to_date, interval=INTERVAL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/notebooks/../src/fetch_data.py", line 41, in fetch_historical_data
+    data = kite.historical_data(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 687, in historical_data
+    data = self._get("market.historical",
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 916, in _get
+    return self._request(route, "GET", url_args=url_args, params=params, is_json=is_json)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 971, in _request
+    raise e
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/kiteconnect/connect.py", line 959, in _request
+    r = self.reqsession.request(method,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hgmac/Documents/3_trading/Quant/.venv/lib/python3.12/site-packages/requests/adapters.py", line 711, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))

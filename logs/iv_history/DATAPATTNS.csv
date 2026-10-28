@@ -1,0 +1,2 @@
+date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
+2026-10-28,DATAPATTNS,3985.0,2026-11-23,26,4000.0,190,200,0.4441,0.476,0.46

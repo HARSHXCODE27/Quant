@@ -1,2 +1,3 @@
 date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
 2026-09-08,MIDCPNIFTY,14632.45,2026-09-29,21,14625.0,198.5,150.55,0.1185,0.1287,0.1236
+2026-10-28,MIDCPNIFTY,13286.6,2026-11-23,26,13275.0,332.0,273.0,0.2085,0.2184,0.2135

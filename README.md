@@ -1120,6 +1120,33 @@ existed (19 was never used) without causing issues.
       about either strategy based on the result — same tested-not-assumed
       standard, applied to itself.
 
+### Stage 12b — Credit spread paper journal (final list, forward-only) ✅
+- [x] **Rebuilt after the Oct 2026 data loss** — the first version was never
+      pushed. `src/credit_spread_journal.py`, run from a new cell in notebook 06
+      and from `scripts/daily_list.py` (skipped with `--no-refresh`).
+- [x] **Every name on the final list is logged as a trade taken at that run** —
+      entry spot, suggested short strike, initial SL (the Supertrend level),
+      current month's monthly expiry from Kite's instrument dump. One open trade
+      per symbol: re-appearing on the next day's list is the same trade.
+- [x] **Tracked on every later run whether or not it is still on the list.** Open
+      trades whose symbol the shortlist no longer refreshes get their own
+      incremental candle catch-up, so they keep being judged on fresh data.
+- [x] **Exactly two exits, by the user's rules:** `SL_HIT` — a COMPLETED 4H candle
+      closes beyond the trailing Supertrend level (the flip; `initial_sl` and
+      `sl_at_exit` both kept); `EXPIRED` — reached expiry with no SL hit. Always
+      the current month's expiry (on expiry day itself, next month's). Only
+      completed candles count — the 13:20 run sees a partial 13:15 candle.
+- [x] **Strike touch is recorded, not an exit** — `strike_touched`,
+      `max_adverse_pct`, `expired_beyond_strike`. No option prices, so P&L is the
+      underlying's `pct_move` signed for the position, not premium.
+- [x] **Verified mechanically** by replaying 2025-01 → 2026-10 twice-daily with NIFTY
+      forced onto the list: every `SL_HIT` exit landed on a real flip candle from
+      `detect_flips()`, every `EXPIRED` exit on its expiry date. That replay is a
+      mechanics check only — NIFTY was never filtered, so it is not a result.
+- [x] Append-only state in `logs/credit_spread_journal.csv` (tracked in git) —
+      unlike Stage 12's journal it cannot be re-derived, because a trade exists
+      only because the list showed it that day.
+
 ## Notes / assumptions log
 
 - **The data-shrinkage regression recurred a FOURTH time even after three separate

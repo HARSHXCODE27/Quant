@@ -1,2 +1,3 @@
 date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
 2026-09-08,DELHIVERY,456.5,2026-09-29,21,455.0,11.8,8.8,0.2325,0.2371,0.2348
+2026-10-28,DELHIVERY,385.0,2026-11-23,26,385.0,14.45,12.55,0.3312,0.3282,0.3297

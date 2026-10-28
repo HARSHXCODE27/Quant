@@ -1,13 +1,10 @@
 config/credentials.py
-data/
 .venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 Project Notes.pages
 **/.DS_Store
-exports/
 config/access_token.txt
 
-# dated advisory output, regenerated twice daily
-reports/
+# data/, exports/ and reports/ are tracked on purpose (backup after the Oct 2026 data loss)

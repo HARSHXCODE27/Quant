@@ -1,2 +1,3 @@
 date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
 2026-09-08,POWERINDIA,31210.0,2026-09-29,21,31000.0,1083.55,820.0,0.3069,0.328,0.3175
+2026-10-28,POWERINDIA,28435.0,2026-11-23,26,28500.0,1399.3,1178.6,0.4519,0.4009,0.4264

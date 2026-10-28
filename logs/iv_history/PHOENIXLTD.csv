@@ -1,2 +1,3 @@
 date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
 2026-09-08,PHOENIXLTD,1901.7,2026-09-29,21,1900.0,47.75,38.4,0.238,0.235,0.2365
+2026-10-28,PHOENIXLTD,1899.3,2026-11-23,26,1900.0,71.05,53.65,0.3318,0.2855,0.3086

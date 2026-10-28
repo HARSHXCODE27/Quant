@@ -21,6 +21,7 @@ why. Before proposing anything, check whether it was already tried:
 | General F&O trend-following (1D, buy/hold/sell equity) | Stages 10, 10b, **10c** (current state) |
 | Naked option buying | Stage 11 |
 | Paper trading journal (debit spread + option buying, forward-only) | Stage 12 |
+| Credit spread paper journal (final list → SL hit / expiry) | Stage 12b |
 | Tested negatives, assumptions | "Notes / assumptions log" at the end |
 
 Git history is also a real reference — commit messages carry the reasoning, not
@@ -56,6 +57,10 @@ findings. Several plausible ideas were built, tested, and thrown away.
   All, read the last cell. Or `python scripts/daily_list.py`.
   Only two 4H candles exist per session (09:15, 13:15), so signals change exactly
   twice a day. Running more often reprints identical output.
+  Each run also updates the credit spread paper journal
+  (`logs/credit_spread_journal.csv`, Stage 12b) — logs every final-list name,
+  tracks open trades to SL hit or expiry. Append-only: a missed run delays
+  exits being recorded but loses nothing; entries are only logged on days it runs.
 - **Each morning** — `python scripts/refresh_token.py`. Kite tokens expire
   overnight; this is the one unavoidable manual step.
 - **Monthly** — `notebooks/03_scale_all_fno.ipynb` (full refresh, all ~216
@@ -70,6 +75,9 @@ findings. Several plausible ideas were built, tested, and thrown away.
   Records one ATM-IV row per F&O symbol to `logs/iv_history/{symbol}.csv`. Building
   toward a real IV rank (~6 months to a usable percentile); safe to skip a day, but
   every skipped day is a permanently missing data point. See Stage 8f.
+- **End of day** — `./scripts/backup_to_github.sh` commits everything (including
+  data/, exports/, reports/) and pushes. Run manually by the user's choice — no
+  scheduled job (macOS blocks background jobs from ~/Documents).
 
 ## Traps that have actually bitten
 
@@ -86,8 +94,9 @@ findings. Several plausible ideas were built, tested, and thrown away.
 - **Partial-metric scoring.** Adding a scoring term with a flat denominator makes
   rows missing that metric score `NaN` and vanish from the ranking — the output
   still looks complete, just shorter. Use per-row weights.
-- **`exports/` and `data/` are gitignored.** Reports are regenerable via
-  `reprocess_all(symbols)` — recomputes from saved candles, no API calls, no token.
+- **`exports/`, `data/` and `reports/` are tracked in git** (since Oct 2026, after a
+  data loss) as a backup. They are still regenerable: `reprocess_all(symbols)`
+  recomputes reports from saved candles, no API calls, no token.
 
 ## Structure
 
@@ -100,15 +109,16 @@ src/       flip_analysis, supertrend, summary_stats, monthly_range  (core)
            black_scholes           BS pricer + implied_vol solver
            iv_recorder             daily forward ATM-IV snapshot (Stage 8f)
            paper_trading           forward-only journal (Stage 12)
+           credit_spread_journal   final-list paper journal, SL hit / expiry (Stage 12b)
 notebooks/ 01 auth · 02 position monitor
            03-07 credit spread (03/04 shared 4H build, 05-06 score+screen, 07 exhaustion test)
            08-09 short IC · 10-13 general F&O trend-following (1D)
            14-16 debit spread · 17-19 option buying · 20-22 exploration/tests
            23 paper trading journal (debit spread + option buying, forward-only)
 scripts/   daily_list.py, refresh_token.py, record_iv_snapshot.py
-exports/   generated reports + RANKING_*.xlsx   (gitignored)
+exports/   generated reports + RANKING_*.xlsx   (tracked in git as a backup)
 logs/      run logs, paper_trading_journal.csv, iv_history/{symbol}.csv (tracked in git —
-           irreplaceable if lost, unlike exports/ and data/)
+           irreplaceable if lost, unlike exports/ and data/ which can be regenerated)
 ```
 
 ## Known open items

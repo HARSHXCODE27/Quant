@@ -202,6 +202,20 @@ def main():
     print(out if args.full else render_compact(final, excluded, summary))
     print(f"\n  full report: reports/latest_entry_list.md")
 
+    # Paper journal: every name on this list is logged as a trade and tracked
+    # to SL hit or expiry (src/credit_spread_journal.py). Skipped with
+    # --no-refresh: exits must be judged on fresh candles, not saved ones.
+    if not args.no_refresh:
+        from src.auth import get_kite
+        from src.credit_spread_journal import run_journal
+        journal, logged, problems = run_journal(get_kite(), final, already_refreshed=symbols)
+        n_open = int((journal["status"] == "OPEN").sum())
+        print(f"\n  journal: {len(logged)} new trade(s) logged"
+              f"{' (' + ', '.join(logged) + ')' if logged else ''}, {n_open} open"
+              f" — logs/credit_spread_journal.csv")
+        for p in problems:
+            print(f"  ** journal: {p}")
+
 
 if __name__ == "__main__":
     main()

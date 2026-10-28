@@ -1,2 +1,3 @@
 date,symbol,spot,expiry,dte,atm_strike,ce_price,pe_price,ce_iv,pe_iv,atm_iv
 2026-09-08,LAURUSLABS,1898.7,2026-09-29,21,1900.0,43.0,40,0.2207,0.2361,0.2284
+2026-10-28,LAURUSLABS,2181.9,2026-11-23,26,2180.0,88.45,86,0.3555,0.3967,0.3761
